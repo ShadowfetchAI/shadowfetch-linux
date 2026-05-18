@@ -33,16 +33,24 @@ Package: shadowfetch-creative-base
 Architecture: all
 Depends:
  ${misc:Depends},
- gimp, krita, inkscape, blender,
+ gimp, krita, inkscape,
  darktable, rawtherapee,
- ardour, audacity, lmms, carla,
+ ardour, audacity,
  lsp-plugins, x42-plugins, calf-plugins,
  kdenlive, obs-studio,
  ffmpeg,
- fonts-inter, fonts-jetbrains-mono
+ fonts-inter
+Recommends:
+ blender,
+ lmms,
+ carla,
+ fonts-jetbrains-mono
 Description: Shadowfetch creative app baseline
  Installs the core set of creative applications Shadowfetch users
- expect: 2D, 3D, photo, audio, and video tools.
+ expect: 2D, 3D, photo, audio, and video tools. Packages not currently
+ available in Debian testing under their expected names (blender, lmms,
+ carla, fonts-jetbrains-mono) are listed as Recommends so install
+ doesn't fail — Flatpak fallbacks are offered in the welcome wizard.
 
 Package: shadowfetch-nvidia
 Architecture: all

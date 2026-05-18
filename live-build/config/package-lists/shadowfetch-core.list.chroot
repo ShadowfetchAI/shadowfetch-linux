@@ -50,7 +50,7 @@ plasma-discover-backend-flatpak
 zram-tools
 earlyoom
 tuned
-preload
+# preload — removed from Debian testing; will revisit in v1.0.1
 
 # Filesystems
 btrfs-progs
@@ -64,7 +64,7 @@ fish
 bash-completion
 htop
 btop
-neofetch
+# neofetch — removed (unmaintained); fastfetch replaces it
 fastfetch
 curl
 wget
@@ -80,17 +80,17 @@ gstreamer1.0-plugins-good
 gstreamer1.0-plugins-bad
 gstreamer1.0-plugins-ugly
 gstreamer1.0-libav
-gstreamer1.0-vaapi
+# gstreamer1.0-vaapi — deprecated/removed
 libdvd-pkg
 
 # Fonts (curated default set)
 fonts-inter
-fonts-jetbrains-mono
+# fonts-jetbrains-mono — not in Debian testing under this name; revisit in v1.0.1
 fonts-firacode
 fonts-noto
 fonts-noto-color-emoji
 fonts-noto-cjk
-fonts-recursive
+# fonts-recursive — not in Debian testing
 fonts-roboto
 fonts-liberation
 fonts-cantarell

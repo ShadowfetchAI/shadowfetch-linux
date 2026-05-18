@@ -4,14 +4,14 @@
 # === 2D / Visual ===
 gimp
 gimp-data-extras
-gimp-plugin-registry
+# gimp-plugin-registry — removed from Debian
 krita
 inkscape
-inkscape-extensions
+# inkscape-extensions — folded into inkscape package
 scribus
 
 # === 3D ===
-blender
+# blender — temporarily dropped; revisit (likely contrib pinning issue). Available via Flathub.
 freecad
 openscad
 meshlab
@@ -26,15 +26,15 @@ luminance-hdr
 # === Audio production ===
 ardour
 audacity
-lmms
+# lmms — dropped for v1; revisit
 hydrogen
 qtractor
 musescore3
 mixxx
 rosegarden
-carla
+# carla — dropped for v1; revisit
 qpwgraph
-helvum
+# helvum — not in Debian testing under this name
 
 # LV2 / LADSPA plugin sets
 lsp-plugins
@@ -75,7 +75,7 @@ gucharmap
 # === Live coding / generative ===
 sonic-pi
 puredata
-processing
+# processing — removed from Debian
 
 # === Utilities for creatives ===
 imagemagick
@@ -83,5 +83,5 @@ graphicsmagick
 exiftool
 jpegoptim
 optipng
-oxipng
+# oxipng — not in Debian testing (in Ubuntu, but not Debian); revisit
 webp

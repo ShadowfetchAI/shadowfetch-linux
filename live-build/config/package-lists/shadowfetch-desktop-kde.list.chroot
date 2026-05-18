@@ -8,7 +8,7 @@ shadowfetch-creative-base
 # Plasma core
 kde-plasma-desktop
 plasma-workspace
-plasma-workspace-wayland
+# plasma-workspace-wayland — merged into plasma-workspace in Plasma 6
 plasma-nm
 plasma-pa
 plasma-systemmonitor
@@ -31,7 +31,7 @@ dolphin
 konsole
 kate
 ark
-spectacle
+# spectacle — temporarily dropped; KDE 6 package layout shifted. Revisit.
 gwenview
 okular
 kcalc
@@ -46,13 +46,13 @@ kio-gdrive
 
 # Theming infrastructure
 qt5-style-kvantum
-qt5-style-kvantum-themes
+# qt5-style-kvantum-themes — not in Debian testing; revisit
 papirus-icon-theme
 kde-style-breeze
 breeze-cursor-theme
 
 # Plasma extras useful for creators
-krunner
+# krunner — part of plasma-workspace in Plasma 6 (transitively installed)
 plasma-thunderbolt
 print-manager
 colord-kde
