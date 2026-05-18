@@ -19,7 +19,7 @@ lb config noauto \
     --iso-publisher "Shadowfetch Project" \
     --iso-volume "SHADOWFETCH" \
     --bootappend-live "boot=live components username=shadow hostname=shadowfetch quiet splash" \
-    --bootloader grub \
+    --bootloader grub2 \
     --memtest none \
     --apt-recommends true \
     --apt-source-archives false \
