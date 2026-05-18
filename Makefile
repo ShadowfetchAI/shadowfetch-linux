@@ -64,9 +64,9 @@ deps:
 		debhelper devscripts equivs dh-python \
 		reprepro gnupg \
 		qemu-system-x86 qemu-utils \
-		xorriso isolinux syslinux-common \
+		xorriso isolinux syslinux-common syslinux-utils \
 		grub-pc-bin grub-efi-amd64-bin mtools \
-		python3
+		xz-utils python3
 
 packages:
 	@mkdir -p $(BUILD_DIR)

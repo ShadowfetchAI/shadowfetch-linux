@@ -110,8 +110,8 @@ LB_JFFS2_ERASEBLOCK=""
 LB_MEMTEST="none"
 
 # $LB_WIN32_LOADER: set win32-loader
-# (Default: true)
-LB_WIN32_LOADER="true"
+# (Default: false)
+LB_WIN32_LOADER="false"
 
 # $LB_NET_ROOT_FILESYSTEM: set netboot filesystem
 # (Default: nfs)
