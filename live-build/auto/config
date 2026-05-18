@@ -5,6 +5,7 @@
 set -e
 
 lb config noauto \
+    --mode debian \
     --distribution testing \
     --archive-areas "main contrib non-free non-free-firmware" \
     --debian-installer live \
@@ -16,12 +17,11 @@ lb config noauto \
     --iso-publisher "Shadowfetch Project" \
     --iso-volume "SHADOWFETCH" \
     --bootappend-live "boot=live components username=shadow hostname=shadowfetch quiet splash" \
-    --bootloaders "grub-efi,syslinux" \
+    --bootloader grub \
     --memtest none \
     --apt-recommends true \
     --apt-source-archives false \
     --backports false \
-    --updates true \
     --security true \
     --mirror-bootstrap "http://deb.debian.org/debian/" \
     --mirror-binary "http://deb.debian.org/debian/" \
