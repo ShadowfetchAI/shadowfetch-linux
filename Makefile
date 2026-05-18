@@ -125,32 +125,32 @@ iso: repo
 		sleep 1 ; \
 		echo ">>> Local repo server PID=$$SERVER_PID on :$(LOCAL_REPO_PORT)" ; \
 		cd "$(LB_DIR)" && sudo lb config && (sudo lb build || echo "WARN: lb build exited non-zero; will check binary/ for usable artifacts and try grub-mkrescue")'
-	@# Verify lb produced the bits we need (squashfs + kernel + initrd in binary/live/)
-	@sudo test -f $(LB_DIR)/binary/live/filesystem.squashfs || { echo "FATAL: no squashfs in $(LB_DIR)/binary/live/" >&2; exit 1; }
-	@KERNEL=$$(sudo ls $(LB_DIR)/binary/live/vmlinuz* 2>/dev/null | head -1) ; \
-		INITRD=$$(sudo ls $(LB_DIR)/binary/live/initrd* 2>/dev/null | head -1) ; \
-		[ -n "$$KERNEL" ] || { echo "FATAL: no kernel in $(LB_DIR)/binary/live/" >&2; exit 1; } ; \
-		[ -n "$$INITRD" ] || { echo "FATAL: no initrd in $(LB_DIR)/binary/live/" >&2; exit 1; } ; \
-		echo ">>> Found kernel: $$KERNEL"; echo ">>> Found initrd: $$INITRD"
-	@# Make binary/ readable so grub-mkrescue can run as non-root
-	@sudo chmod -R a+rX $(LB_DIR)/binary
-	@# Normalize kernel/initrd filenames in binary/live/ to predictable names
-	@sudo bash -c 'cd $(LB_DIR)/binary/live && \
-		[ -e vmlinuz ] || ln -sf $$(ls vmlinuz* | grep -v "^vmlinuz$$" | head -1) vmlinuz ; \
-		[ -e initrd.img ] || ln -sf $$(ls initrd* | grep -v "^initrd.img$$" | head -1) initrd.img'
-	@# Write our grub.cfg (overrides whatever lb left behind, which may be broken)
-	@sudo bash -c 'mkdir -p $(LB_DIR)/binary/boot/grub && cat > $(LB_DIR)/binary/boot/grub/grub.cfg' < $(ROOT)/live-build/config/grub.cfg
-	@sudo chmod a+r $(LB_DIR)/binary/boot/grub/grub.cfg
+	@# Take ownership of lb's output so we can write into it as user.
+	@# lb_binary_linux-image in lb 3.0~a57 silently fails to copy kernel+initrd
+	@# from chroot to binary/live/ — we do it manually below.
+	@sudo chown -R $$USER:$$USER $(LB_DIR)/binary
+	@sudo chmod -R a+rX $(LB_DIR)/chroot/boot
+	@# Sanity check: squashfs must exist
+	@test -f $(LB_DIR)/binary/live/filesystem.squashfs || { echo "FATAL: no squashfs in $(LB_DIR)/binary/live/" >&2; exit 1; }
+	@# Copy kernel + initrd from chroot/boot/ to binary/live/ with predictable names
+	@KERNEL=$$(ls $(LB_DIR)/chroot/boot/vmlinuz-*-amd64 2>/dev/null | sort -V | tail -1) ; \
+		INITRD=$$(ls $(LB_DIR)/chroot/boot/initrd.img-*-amd64 2>/dev/null | sort -V | tail -1) ; \
+		[ -n "$$KERNEL" ] || { echo "FATAL: no kernel in $(LB_DIR)/chroot/boot/" >&2; exit 1; } ; \
+		[ -n "$$INITRD" ] || { echo "FATAL: no initrd in $(LB_DIR)/chroot/boot/" >&2; exit 1; } ; \
+		echo ">>> Found kernel: $$KERNEL" ; \
+		echo ">>> Found initrd: $$INITRD" ; \
+		cp "$$KERNEL" $(LB_DIR)/binary/live/vmlinuz ; \
+		cp "$$INITRD" $(LB_DIR)/binary/live/initrd.img
+	@# Write our grub.cfg (overrides whatever lb left behind)
+	@mkdir -p $(LB_DIR)/binary/boot/grub
+	@cp $(ROOT)/live-build/config/grub.cfg $(LB_DIR)/binary/boot/grub/grub.cfg
 	@# Assemble the final hybrid (BIOS+UEFI) ISO with grub-mkrescue
 	@echo ">>> Assembling final ISO with grub-mkrescue (BIOS + UEFI hybrid)"
 	@rm -f $(ROOT)/$(ISO_NAME)
 	@sudo grub-mkrescue \
 		--output=$(ROOT)/$(ISO_NAME) \
-		--volid=SHADOWFETCH \
-		--product-name="Shadowfetch Linux" \
-		--product-version="$(VERSION)" \
 		$(LB_DIR)/binary \
-		-- -as mkisofs -joliet
+		-- -volid SHADOWFETCH
 	@sudo chown $$USER:$$USER $(ROOT)/$(ISO_NAME)
 	@echo ">>> Built $(ISO_NAME)"
 	@ls -lh $(ROOT)/$(ISO_NAME)
