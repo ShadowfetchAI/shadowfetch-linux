@@ -41,9 +41,6 @@ Depends:
  ffmpeg,
  fonts-inter
 Recommends:
- blender,
- lmms,
- carla,
  fonts-jetbrains-mono
 Description: Shadowfetch creative app baseline
  Installs the core set of creative applications Shadowfetch users

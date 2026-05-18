@@ -24,6 +24,10 @@ live-config
 live-config-systemd
 live-tools
 
+# syslinux-utils provides isohybrid (lb_binary_iso runs it inside the chroot;
+# Debian testing split isohybrid out of syslinux into syslinux-utils)
+syslinux-utils
+
 # Installer (Calamares — themed separately)
 calamares
 calamares-settings-debian
@@ -89,7 +93,7 @@ fonts-inter
 fonts-firacode
 fonts-noto
 fonts-noto-color-emoji
-fonts-noto-cjk
+# fonts-noto-cjk — ~400MB; dropped for v1 (users with CJK needs: apt install fonts-noto-cjk)
 # fonts-recursive — not in Debian testing
 fonts-roboto
 fonts-liberation
