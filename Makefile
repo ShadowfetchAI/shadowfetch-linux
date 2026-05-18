@@ -120,7 +120,14 @@ iso: repo
 		sleep 1 ; \
 		echo ">>> Local repo server PID=$$SERVER_PID on :$(LOCAL_REPO_PORT)" ; \
 		cd "$(LB_DIR)" && sudo lb config && sudo lb build'
-	@cp $(LB_DIR)/live-image-amd64.iso $(ROOT)/$(ISO_NAME)
+	@# lb 3.0~a57 writes to binary.iso; older lb wrote live-image-<arch>.iso. Handle both.
+	@if [ -f $(LB_DIR)/binary.iso ]; then \
+		cp $(LB_DIR)/binary.iso $(ROOT)/$(ISO_NAME); \
+	elif [ -f $(LB_DIR)/live-image-amd64.iso ]; then \
+		cp $(LB_DIR)/live-image-amd64.iso $(ROOT)/$(ISO_NAME); \
+	else \
+		echo "no ISO output found in $(LB_DIR) (tried binary.iso, live-image-amd64.iso)" >&2; exit 1; \
+	fi
 	@echo ">>> Built $(ISO_NAME)"
 	@ls -lh $(ROOT)/$(ISO_NAME)
 	@sha256sum $(ROOT)/$(ISO_NAME) > $(ROOT)/$(ISO_NAME).sha256
