@@ -1,0 +1,24 @@
+name = "shadowfetch-linux"
+main = "src/index.js"
+compatibility_date = "2026-05-18"
+
+# R2 bucket holding ISO releases (releases/*.iso, releases/*.sha256, releases/*.asc)
+# and the APT repo files (apt/dists/*, apt/pool/*) and the GPG pubkey
+# (shadowfetch.gpg.asc).
+[[r2_buckets]]
+binding = "RELEASES"
+bucket_name = "shadowfetch-linux"
+
+# Route the /linux subtree of shadowfetch.com to this worker.
+# Both apex and www. The apex route catches direct visits; the www route
+# catches the canonical redirect target (shadowfetch.com redirects / to www).
+[[routes]]
+pattern = "shadowfetch.com/linux*"
+zone_name = "shadowfetch.com"
+
+[[routes]]
+pattern = "www.shadowfetch.com/linux*"
+zone_name = "shadowfetch.com"
+
+[observability]
+enabled = true
