@@ -21,6 +21,7 @@ lb config noauto \
     --bootappend-live "boot=live components username=shadow hostname=shadowfetch quiet splash" \
     --bootloader grub2 \
     --memtest none \
+    --win32-loader false \
     --apt-recommends true \
     --apt-source-archives false \
     --backports false \
