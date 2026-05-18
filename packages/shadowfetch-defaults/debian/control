@@ -1,0 +1,22 @@
+Source: shadowfetch-defaults
+Section: misc
+Priority: optional
+Maintainer: Shadowfetch Project <maintainers@shadowfetch.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Homepage: https://shadowfetch.com/linux/
+
+Package: shadowfetch-defaults
+Architecture: all
+Depends:
+ ${misc:Depends},
+ fastfetch
+Recommends:
+ shadowfetch-themes,
+ shadowfetch-branding,
+ papirus-icon-theme
+Description: Shadowfetch default user configuration
+ Ships the Shadowfetch defaults applied to new user accounts (via
+ /etc/skel): kdeglobals, kwinrc, konsole profile, fastfetch config.
+ Also ships a system-wide /etc/profile.d snippet that prints a
+ fastfetch banner on the first interactive shell.

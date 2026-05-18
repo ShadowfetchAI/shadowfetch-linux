@@ -1,0 +1,4 @@
+data/etc/motd                          etc/
+data/usr/share/shadowfetch/logo.txt    usr/share/shadowfetch/
+data/usr/share/shadowfetch/os-release.shadowfetch  usr/share/shadowfetch/
+data/usr/share/shadowfetch/version     usr/share/shadowfetch/

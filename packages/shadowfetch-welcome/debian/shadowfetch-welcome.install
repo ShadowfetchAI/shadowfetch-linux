@@ -1,1 +1,3 @@
 src/shadowfetch-welcome usr/bin/
+data/shadowfetch-welcome.desktop usr/share/applications/
+data/shadowfetch-welcome.desktop etc/xdg/autostart/

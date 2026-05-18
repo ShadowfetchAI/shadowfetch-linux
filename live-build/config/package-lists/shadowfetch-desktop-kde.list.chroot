@@ -1,6 +1,10 @@
 # Shadowfetch desktop — KDE Plasma stack
 # Plasma 6 on Debian testing — modern, Wayland-first, properly themed.
 
+# Shadowfetch metas (from our local apt repo, wired in via archives/)
+shadowfetch-desktop
+shadowfetch-creative-base
+
 # Plasma core
 kde-plasma-desktop
 plasma-workspace

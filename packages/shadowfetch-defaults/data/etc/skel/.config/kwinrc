@@ -1,0 +1,11 @@
+[Compositing]
+OpenGLIsUnsafe=false
+WindowsBlockCompositing=true
+
+[Effect-Blur]
+BlurStrength=12
+
+[Plugins]
+blurEnabled=true
+slideEnabled=true
+windowapertureEnabled=false

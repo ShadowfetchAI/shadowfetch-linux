@@ -1,0 +1,16 @@
+Source: shadowfetch-branding
+Section: misc
+Priority: optional
+Maintainer: Shadowfetch Project <maintainers@shadowfetch.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Homepage: https://shadowfetch.com/linux/
+
+Package: shadowfetch-branding
+Architecture: all
+Depends: ${misc:Depends}
+Description: Shadowfetch branding assets
+ Ships the Shadowfetch ASCII logo (consumed by fastfetch), the
+ message-of-the-day, a versioned os-release source consumed by
+ the live-build chroot hook during ISO assembly, and miscellaneous
+ brand-identity files.

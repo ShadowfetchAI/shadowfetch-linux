@@ -1,21 +1,13 @@
 # Shadowfetch NVIDIA support
 # Proprietary drivers + tooling, baked in per user spec.
-# A first-boot hook will detect GPU and remove these if AMD/Intel detected,
-# so we don't push the nvidia stack onto users who don't need it.
+# Pulls everything through the shadowfetch-nvidia metapackage so the first-boot
+# hook can cleanly purge the stack on non-NVIDIA hardware (apt autoremove
+# follows the dep graph from the metapackage).
 
-nvidia-driver
-nvidia-driver-libs
-nvidia-driver-bin
-nvidia-settings
-nvidia-vulkan-icd
-libnvidia-encode1
-libnvidia-decode1
-nvidia-vaapi-driver
-firmware-nvidia-gsp
+shadowfetch-nvidia
 
-# CUDA runtime for creative apps that benefit (Blender, DaVinci Resolve, ML tools)
+# CUDA runtime — kept explicit (heavy; only useful with NVIDIA + creative apps
+# like Blender, DaVinci Resolve, ML tooling). Also stripped by firstboot hook
+# if no NVIDIA detected.
 nvidia-cuda-toolkit
 nvidia-cudnn
-
-# For mixed-GPU laptops
-nvidia-prime

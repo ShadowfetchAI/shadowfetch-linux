@@ -1,0 +1,13 @@
+NAME="Shadowfetch"
+PRETTY_NAME="Shadowfetch Linux 1.0 (Umbra)"
+ID=shadowfetch
+ID_LIKE=debian
+VERSION="1.0 (Umbra)"
+VERSION_ID="1.0"
+VERSION_CODENAME=umbra
+ANSI_COLOR="1;35"
+HOME_URL="https://shadowfetch.com/linux/"
+DOCUMENTATION_URL="https://shadowfetch.com/linux/docs/"
+SUPPORT_URL="https://shadowfetch.com/linux/support/"
+BUG_REPORT_URL="https://shadowfetch.com/linux/issues/"
+LOGO=shadowfetch

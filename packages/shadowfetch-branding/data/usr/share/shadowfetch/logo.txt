@@ -1,0 +1,23 @@
+${c1}
+                      .,;:ccc:,.
+                  .:cooooooooooolc;.
+               ,coooooooooooooooooooc,
+             ,looooooooooooooooooooooool,
+           ,loooooooooooooooooooooooooooool,
+          :ooooooooooooooooooooooooooooooooo:
+         :oooooooooo${c2}ll${c1}oooooooo${c2}ll${c1}oooooooooo:
+        ;oooooooooo${c2}lcc${c1}oooooooo${c2}cc${c1}oooooooooooo;
+        ooooooooooo${c2}l${c1}ooooooooooo${c2}l${c1}oooooooooooo
+        ooooooooo${c2}     SHADOWFETCH      ${c1}oooooo
+        ooooooooo${c2}        LINUX         ${c1}oooooo
+        ooooooooo${c2}     UMBRA  1.0       ${c1}oooooo
+        oooooooooooooooooooooooooooooooooo
+        ;oooooooooooooooooooooooooooooooo;
+         :oooooooooooooooooooooooooooooo:
+          :ooooooooooooooooooooooooooo:
+           ,loooooooooooooooooooooool,
+             ,loooooooooooooooooool,
+               ,coooooooooooooooc,
+                  .:cooooooooc:.
+                      .,;::;.
+${c0}

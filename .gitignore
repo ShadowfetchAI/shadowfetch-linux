@@ -1,0 +1,33 @@
+# Build artifacts
+/build/
+*.iso
+*.iso.sha256
+*.deb
+*.changes
+*.buildinfo
+*.dsc
+*.tar.*
+*.log
+
+# live-build state (regenerable from config/)
+/live-build/.build/
+/live-build/binary
+/live-build/binary.list
+/live-build/binary.modified.timestamps
+/live-build/binary.packages
+/live-build/cache/
+/live-build/chroot/
+/live-build/chroot.files
+/live-build/chroot.packages.*
+/live-build/config/archives/shadowfetch.key.*
+/live-build/shadowfetch-build.log
+
+# reprepro state (regenerable)
+/repo/db/
+/repo/dists/
+/repo/pool/
+
+# Local secrets / scratch
+.env
+.env.local
+*.bak

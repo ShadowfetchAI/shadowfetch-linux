@@ -33,8 +33,13 @@ cat > /etc/default/earlyoom <<'EOF'
 EARLYOOM_ARGS="-r 60 -m 5 -s 10 --avoid '(^|/)(init|systemd|sshd|kwin_wayland|kwin_x11|plasmashell|sddm)$' --prefer '(^|/)(chrom|firefox|blender|kdenlive|ardour|davinci|GIMP|krita|inkscape)$'"
 EOF
 
-# /etc/os-release branding
-cat > /etc/os-release <<'EOF'
+# /etc/os-release branding — sourced from shadowfetch-branding package
+# so the canonical content lives in one place and ships in updates.
+if [ -f /usr/share/shadowfetch/os-release.shadowfetch ]; then
+    cp /usr/share/shadowfetch/os-release.shadowfetch /etc/os-release
+else
+    # Fallback if shadowfetch-branding somehow didn't install
+    cat > /etc/os-release <<'EOF'
 NAME="Shadowfetch"
 PRETTY_NAME="Shadowfetch Linux"
 ID=shadowfetch
@@ -42,10 +47,11 @@ ID_LIKE=debian
 VERSION="1.0 (Umbra)"
 VERSION_ID="1.0"
 VERSION_CODENAME=umbra
-HOME_URL="https://shadowfetch.example/"
-SUPPORT_URL="https://shadowfetch.example/support"
-BUG_REPORT_URL="https://shadowfetch.example/bugs"
+HOME_URL="https://shadowfetch.com/linux/"
+SUPPORT_URL="https://shadowfetch.com/linux/support"
+BUG_REPORT_URL="https://shadowfetch.com/linux/issues"
 EOF
+fi
 
 # /etc/issue and /etc/issue.net
 echo "Shadowfetch Linux 1.0 \\n \\l" > /etc/issue

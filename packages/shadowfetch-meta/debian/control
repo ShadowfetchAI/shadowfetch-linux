@@ -43,3 +43,20 @@ Depends:
 Description: Shadowfetch creative app baseline
  Installs the core set of creative applications Shadowfetch users
  expect: 2D, 3D, photo, audio, and video tools.
+
+Package: shadowfetch-nvidia
+Architecture: all
+Depends:
+ ${misc:Depends},
+ nvidia-driver,
+ nvidia-settings,
+ nvidia-vaapi-driver,
+ libnvidia-encode1,
+ firmware-nvidia-gsp
+Recommends:
+ nvidia-cuda-toolkit,
+ nvidia-prime
+Description: Shadowfetch NVIDIA driver bundle
+ Pulls in the proprietary NVIDIA stack used by Shadowfetch by default.
+ A first-boot hook removes this stack if no NVIDIA GPU is detected, so
+ it is safe to install on non-NVIDIA hardware.
