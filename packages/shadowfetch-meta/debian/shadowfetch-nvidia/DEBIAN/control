@@ -1,0 +1,15 @@
+Package: shadowfetch-nvidia
+Source: shadowfetch-meta
+Version: 1.0.0-1
+Architecture: all
+Maintainer: Shadowfetch Project <maintainers@shadowfetch.example>
+Installed-Size: 7
+Depends: nvidia-driver, nvidia-settings, nvidia-vaapi-driver, libnvidia-encode1, firmware-nvidia-gsp
+Recommends: nvidia-cuda-toolkit, nvidia-prime
+Section: metapackages
+Priority: optional
+Homepage: https://shadowfetch.example/
+Description: Shadowfetch NVIDIA driver bundle
+ Pulls in the proprietary NVIDIA stack used by Shadowfetch by default.
+ A first-boot hook removes this stack if no NVIDIA GPU is detected, so
+ it is safe to install on non-NVIDIA hardware.

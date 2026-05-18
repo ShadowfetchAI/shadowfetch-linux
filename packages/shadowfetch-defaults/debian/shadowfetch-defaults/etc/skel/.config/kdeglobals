@@ -1,0 +1,11 @@
+[General]
+ColorScheme=ShadowfetchDark
+Name=Shadowfetch Dark
+
+[KDE]
+LookAndFeelPackage=org.shadowfetch.dark
+SingleClick=false
+contrast=4
+
+[Icons]
+Theme=Papirus-Dark

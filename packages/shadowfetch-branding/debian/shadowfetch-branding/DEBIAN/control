@@ -1,0 +1,13 @@
+Package: shadowfetch-branding
+Version: 1.0.0-1
+Architecture: all
+Maintainer: Shadowfetch Project <maintainers@shadowfetch.com>
+Installed-Size: 14
+Section: misc
+Priority: optional
+Homepage: https://shadowfetch.com/linux/
+Description: Shadowfetch branding assets
+ Ships the Shadowfetch ASCII logo (consumed by fastfetch), the
+ message-of-the-day, a versioned os-release source consumed by
+ the live-build chroot hook during ISO assembly, and miscellaneous
+ brand-identity files.

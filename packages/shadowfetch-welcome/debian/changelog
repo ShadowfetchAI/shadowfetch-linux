@@ -1,0 +1,6 @@
+shadowfetch-welcome (1.0.0-1) unstable; urgency=medium
+
+  * Initial release of the Shadowfetch first-boot welcome experience.
+  * PyQt6 wizard: welcome, accent picker, optional Flatpak installs.
+
+ -- Shadowfetch Project <maintainers@shadowfetch.com>  Mon, 18 May 2026 12:00:00 +0000

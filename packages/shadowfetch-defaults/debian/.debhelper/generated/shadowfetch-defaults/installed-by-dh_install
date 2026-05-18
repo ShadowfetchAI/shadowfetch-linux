@@ -1,0 +1,5 @@
+./data/etc/profile.d/shadowfetch.sh
+./data/etc/skel/.config/kdeglobals
+./data/etc/skel/.config/kwinrc
+./data/etc/skel/.config/fastfetch/config.jsonc
+./data/etc/skel/.local/share/konsole/Shadowfetch.profile

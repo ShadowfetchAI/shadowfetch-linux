@@ -1,0 +1,11 @@
+shadowfetch-meta (1.0.0-1) unstable; urgency=medium
+
+  * Initial release of Shadowfetch Linux 1.0 "Umbra".
+  * KDE Plasma 6 base on Debian testing.
+  * Full creative workstation stack: GIMP, Krita, Inkscape, Blender,
+    darktable, RawTherapee, Ardour, Audacity, Kdenlive, OBS.
+  * NVIDIA proprietary driver baked in with first-boot autodetection.
+  * Shadowfetch dark theme and signature accent.
+  * First-boot welcome experience.
+
+ -- Shadowfetch Project <maintainers@shadowfetch.example>  Mon, 18 May 2026 00:00:00 +0000

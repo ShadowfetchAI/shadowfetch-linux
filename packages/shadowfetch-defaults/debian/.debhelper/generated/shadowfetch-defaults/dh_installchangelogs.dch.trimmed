@@ -1,0 +1,7 @@
+shadowfetch-defaults (1.0.0-1) unstable; urgency=medium
+
+  * Initial defaults package for Shadowfetch Linux 1.0 "Umbra".
+  * Moves /etc/skel content out of the live-build hook into a
+    proper package so post-release updates can flow via apt.
+
+ -- Shadowfetch Project <maintainers@shadowfetch.com>  Mon, 18 May 2026 12:00:00 +0000

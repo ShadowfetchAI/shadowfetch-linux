@@ -1,0 +1,15 @@
+Package: shadowfetch-defaults
+Version: 1.0.0-1
+Architecture: all
+Maintainer: Shadowfetch Project <maintainers@shadowfetch.com>
+Installed-Size: 21
+Depends: fastfetch
+Recommends: shadowfetch-themes, shadowfetch-branding, papirus-icon-theme
+Section: misc
+Priority: optional
+Homepage: https://shadowfetch.com/linux/
+Description: Shadowfetch default user configuration
+ Ships the Shadowfetch defaults applied to new user accounts (via
+ /etc/skel): kdeglobals, kwinrc, konsole profile, fastfetch config.
+ Also ships a system-wide /etc/profile.d snippet that prints a
+ fastfetch banner on the first interactive shell.

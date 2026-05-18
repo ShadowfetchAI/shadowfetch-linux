@@ -1,0 +1,15 @@
+Package: shadowfetch-desktop
+Source: shadowfetch-meta
+Version: 1.0.0-1
+Architecture: all
+Maintainer: Shadowfetch Project <maintainers@shadowfetch.example>
+Installed-Size: 7
+Depends: shadowfetch-themes (= 1.0.0-1), shadowfetch-defaults (= 1.0.0-1), shadowfetch-branding (= 1.0.0-1), shadowfetch-welcome (= 1.0.0-1), shadowfetch-creative-base (= 1.0.0-1), kde-plasma-desktop, sddm, pipewire, pipewire-pulse, wireplumber, network-manager, flatpak, plasma-discover-backend-flatpak
+Section: metapackages
+Priority: optional
+Homepage: https://shadowfetch.example/
+Description: Shadowfetch creative workstation (KDE Plasma edition)
+ Shadowfetch is a Debian-based Linux distribution for visual artists,
+ musicians, and video creators. This meta-package installs the full
+ Shadowfetch desktop experience, including the KDE Plasma session,
+ the creative-app baseline, themes, branding, and the welcome tool.
