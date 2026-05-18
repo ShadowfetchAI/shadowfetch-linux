@@ -116,22 +116,42 @@ iso: repo
 	@# Clean prior build
 	@cd $(LB_DIR) && sudo lb clean
 	@# Serve the local repo over HTTP so the chroot's apt can see it,
-	@# then run lb config + lb build. Trap ensures the server is killed on any exit.
-	@bash -c 'set -e ; \
-		cd "$(REPO_DIR)" && python3 -m http.server $(LOCAL_REPO_PORT) --bind 127.0.0.1 >/tmp/shadowfetch-repo-server.log 2>&1 & \
+	@# then run lb config + lb build. lb 3.0~a57's binary_grub2 stage is broken
+	@# (no EFI support, malformed BIOS image) so we tolerate its failure and assemble
+	@# the final ISO via grub-mkrescue below.
+	@bash -c 'cd "$(REPO_DIR)" && python3 -m http.server $(LOCAL_REPO_PORT) --bind 127.0.0.1 >/tmp/shadowfetch-repo-server.log 2>&1 & \
 		SERVER_PID=$$! ; \
 		trap "kill $$SERVER_PID 2>/dev/null || true" EXIT INT TERM ; \
 		sleep 1 ; \
 		echo ">>> Local repo server PID=$$SERVER_PID on :$(LOCAL_REPO_PORT)" ; \
-		cd "$(LB_DIR)" && sudo lb config && sudo lb build'
-	@# lb 3.0~a57 writes to binary.iso; older lb wrote live-image-<arch>.iso. Handle both.
-	@if [ -f $(LB_DIR)/binary.iso ]; then \
-		cp $(LB_DIR)/binary.iso $(ROOT)/$(ISO_NAME); \
-	elif [ -f $(LB_DIR)/live-image-amd64.iso ]; then \
-		cp $(LB_DIR)/live-image-amd64.iso $(ROOT)/$(ISO_NAME); \
-	else \
-		echo "no ISO output found in $(LB_DIR) (tried binary.iso, live-image-amd64.iso)" >&2; exit 1; \
-	fi
+		cd "$(LB_DIR)" && sudo lb config && (sudo lb build || echo "WARN: lb build exited non-zero; will check binary/ for usable artifacts and try grub-mkrescue")'
+	@# Verify lb produced the bits we need (squashfs + kernel + initrd in binary/live/)
+	@sudo test -f $(LB_DIR)/binary/live/filesystem.squashfs || { echo "FATAL: no squashfs in $(LB_DIR)/binary/live/" >&2; exit 1; }
+	@KERNEL=$$(sudo ls $(LB_DIR)/binary/live/vmlinuz* 2>/dev/null | head -1) ; \
+		INITRD=$$(sudo ls $(LB_DIR)/binary/live/initrd* 2>/dev/null | head -1) ; \
+		[ -n "$$KERNEL" ] || { echo "FATAL: no kernel in $(LB_DIR)/binary/live/" >&2; exit 1; } ; \
+		[ -n "$$INITRD" ] || { echo "FATAL: no initrd in $(LB_DIR)/binary/live/" >&2; exit 1; } ; \
+		echo ">>> Found kernel: $$KERNEL"; echo ">>> Found initrd: $$INITRD"
+	@# Make binary/ readable so grub-mkrescue can run as non-root
+	@sudo chmod -R a+rX $(LB_DIR)/binary
+	@# Normalize kernel/initrd filenames in binary/live/ to predictable names
+	@sudo bash -c 'cd $(LB_DIR)/binary/live && \
+		[ -e vmlinuz ] || ln -sf $$(ls vmlinuz* | grep -v "^vmlinuz$$" | head -1) vmlinuz ; \
+		[ -e initrd.img ] || ln -sf $$(ls initrd* | grep -v "^initrd.img$$" | head -1) initrd.img'
+	@# Write our grub.cfg (overrides whatever lb left behind, which may be broken)
+	@sudo bash -c 'mkdir -p $(LB_DIR)/binary/boot/grub && cat > $(LB_DIR)/binary/boot/grub/grub.cfg' < $(ROOT)/live-build/config/grub.cfg
+	@sudo chmod a+r $(LB_DIR)/binary/boot/grub/grub.cfg
+	@# Assemble the final hybrid (BIOS+UEFI) ISO with grub-mkrescue
+	@echo ">>> Assembling final ISO with grub-mkrescue (BIOS + UEFI hybrid)"
+	@rm -f $(ROOT)/$(ISO_NAME)
+	@sudo grub-mkrescue \
+		--output=$(ROOT)/$(ISO_NAME) \
+		--volid=SHADOWFETCH \
+		--product-name="Shadowfetch Linux" \
+		--product-version="$(VERSION)" \
+		$(LB_DIR)/binary \
+		-- -as mkisofs -joliet
+	@sudo chown $$USER:$$USER $(ROOT)/$(ISO_NAME)
 	@echo ">>> Built $(ISO_NAME)"
 	@ls -lh $(ROOT)/$(ISO_NAME)
 	@sha256sum $(ROOT)/$(ISO_NAME) > $(ROOT)/$(ISO_NAME).sha256

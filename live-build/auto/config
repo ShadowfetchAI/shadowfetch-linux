@@ -13,7 +13,6 @@ lb config noauto \
     --debian-installer-gui false \
     --architectures amd64 \
     --linux-flavours amd64 \
-    --linux-packages none \
     --binary-images iso \
     --compression xz \
     --iso-application "Shadowfetch Linux" \
