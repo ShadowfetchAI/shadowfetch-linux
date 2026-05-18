@@ -120,7 +120,7 @@ iso: repo
 		sleep 1 ; \
 		echo ">>> Local repo server PID=$$SERVER_PID on :$(LOCAL_REPO_PORT)" ; \
 		cd "$(LB_DIR)" && sudo lb config && sudo lb build'
-	@cp $(LB_DIR)/live-image-amd64.hybrid.iso $(ROOT)/$(ISO_NAME)
+	@cp $(LB_DIR)/live-image-amd64.iso $(ROOT)/$(ISO_NAME)
 	@echo ">>> Built $(ISO_NAME)"
 	@ls -lh $(ROOT)/$(ISO_NAME)
 	@sha256sum $(ROOT)/$(ISO_NAME) > $(ROOT)/$(ISO_NAME).sha256

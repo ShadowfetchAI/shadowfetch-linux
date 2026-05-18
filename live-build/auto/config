@@ -14,7 +14,7 @@ lb config noauto \
     --architectures amd64 \
     --linux-flavours amd64 \
     --linux-packages none \
-    --binary-images iso-hybrid \
+    --binary-images iso \
     --compression xz \
     --iso-application "Shadowfetch Linux" \
     --iso-publisher "Shadowfetch Project" \
