@@ -1,4 +1,5 @@
 #!/bin/sh
-# Cleans up the live-build working tree
+# Cleans up the live-build working tree.
+# 'noauto' skips the auto/<cmd> wrapper, avoiding infinite recursion.
 set -e
-lb clean "${@}"
+lb clean noauto "${@}"

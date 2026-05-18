@@ -1,3 +1,5 @@
 #!/bin/sh
+# Drives the actual ISO build.
+# 'noauto' skips the auto/<cmd> wrapper, avoiding infinite recursion.
 set -e
-lb build "${@}" 2>&1 | tee shadowfetch-build.log
+lb build noauto "${@}" 2>&1 | tee shadowfetch-build.log
