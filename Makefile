@@ -96,10 +96,12 @@ repo: packages
 	@reprepro -b $(REPO_DIR) list $(CODENAME)
 
 iso: repo
-	@# Stage GPG key for live-build's archives/ system (chroot + binary trust)
+	@# Stage GPG key for live-build's archives/ system.
+	@# apt expects .gpg files to be binary (dearmored) — armored keys with .gpg
+	@# suffix are silently ignored.
 	@mkdir -p $(LB_DIR)/config/archives
-	@cp $(REPO_DIR)/shadowfetch.gpg.asc $(LB_DIR)/config/archives/shadowfetch.key.chroot
-	@cp $(REPO_DIR)/shadowfetch.gpg.asc $(LB_DIR)/config/archives/shadowfetch.key.binary
+	@gpg --dearmor < $(REPO_DIR)/shadowfetch.gpg.asc > $(LB_DIR)/config/archives/shadowfetch.key.chroot
+	@cp $(LB_DIR)/config/archives/shadowfetch.key.chroot $(LB_DIR)/config/archives/shadowfetch.key.binary
 	@# Clean prior build
 	@cd $(LB_DIR) && sudo lb clean
 	@# Serve the local repo over HTTP so the chroot's apt can see it,

@@ -22,7 +22,7 @@ lb config noauto \
     --apt-recommends true \
     --apt-source-archives false \
     --backports false \
-    --security true \
+    --security false \
     --mirror-bootstrap "http://deb.debian.org/debian/" \
     --mirror-binary "http://deb.debian.org/debian/" \
     --firmware-chroot true \
