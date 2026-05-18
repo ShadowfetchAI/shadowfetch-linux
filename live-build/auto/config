@@ -9,8 +9,8 @@ lb config noauto \
     --initsystem systemd \
     --distribution testing \
     --archive-areas "main contrib non-free non-free-firmware" \
-    --debian-installer live \
-    --debian-installer-gui true \
+    --debian-installer false \
+    --debian-installer-gui false \
     --architectures amd64 \
     --linux-flavours amd64 \
     --linux-packages none \
