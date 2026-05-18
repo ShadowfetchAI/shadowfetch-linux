@@ -2,7 +2,7 @@ Package: shadowfetch-branding
 Version: 1.0.0-1
 Architecture: all
 Maintainer: Shadowfetch Project <maintainers@shadowfetch.com>
-Installed-Size: 14
+Installed-Size: 12
 Section: misc
 Priority: optional
 Homepage: https://shadowfetch.com/linux/

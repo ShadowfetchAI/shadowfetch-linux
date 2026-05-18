@@ -38,7 +38,12 @@ LB_DIR    := $(ROOT)/live-build
 
 R2_BUCKET ?= shadowfetch-linux
 
-.PHONY: all help deps packages repo iso sign publish qemu clean distclean
+# Used by sync-from-linux (Mac-side flow): host + path to the build box.
+LINUX_HOST ?= shadowfetch-linux
+LINUX_PATH ?= ~/projects/shadowfetch
+
+.PHONY: all help deps packages repo iso sign publish qemu clean distclean \
+        sync-from-linux deploy-worker ship
 
 all: iso
 
@@ -158,6 +163,33 @@ qemu:
 		-net nic,model=virtio -net user \
 		-drive file=$(ROOT)/$(ISO_NAME),media=cdrom,readonly=on \
 		-boot d
+
+# ---- Mac-side deploy flow ----
+# Run these from your Mac (where wrangler is logged in) to ship a release
+# that was built on $(LINUX_HOST).
+
+# Pull the latest ISO + checksum + signature + reprepro repo back from the
+# Linux build box. Idempotent.
+sync-from-linux:
+	@echo ">>> Pulling ISO + repo from $(LINUX_HOST):$(LINUX_PATH)"
+	@rsync -avzhP $(LINUX_HOST):$(LINUX_PATH)/shadowfetch-*.iso $(ROOT)/ 2>/dev/null || echo "(no ISO yet on Linux box)"
+	@rsync -avzhP $(LINUX_HOST):$(LINUX_PATH)/shadowfetch-*.iso.sha256 $(ROOT)/ 2>/dev/null || true
+	@rsync -avzhP $(LINUX_HOST):$(LINUX_PATH)/shadowfetch-*.iso.asc $(ROOT)/ 2>/dev/null || true
+	@rsync -avzh --delete $(LINUX_HOST):$(LINUX_PATH)/repo/ $(REPO_DIR)/
+	@ls -lh $(ROOT)/shadowfetch-*.iso 2>/dev/null || echo "(no ISO present)"
+
+# Deploy the shadowfetch-linux Worker. Requires `wrangler login` (one time) or CLOUDFLARE_API_TOKEN.
+deploy-worker:
+	@command -v wrangler >/dev/null || { echo "wrangler not installed. Run: brew install cloudflare-wrangler2" >&2; exit 1; }
+	@cd $(ROOT)/web/shadowfetch-linux-worker && wrangler deploy
+
+# Full Mac-side ship: pull artifacts, publish to R2, deploy Worker.
+ship: sync-from-linux publish deploy-worker
+	@echo ""
+	@echo ">>> SHIPPED. Verify:"
+	@echo "    open https://shadowfetch.com/linux/"
+	@echo "    curl -I https://shadowfetch.com/linux/download/$(ISO_NAME)"
+	@echo "    curl -sI https://shadowfetch.com/linux/apt/dists/$(CODENAME)/InRelease"
 
 clean:
 	-cd $(LB_DIR) && sudo lb clean
