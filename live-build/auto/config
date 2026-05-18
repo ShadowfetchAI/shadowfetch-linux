@@ -12,6 +12,7 @@ lb config noauto \
     --debian-installer-gui true \
     --architectures amd64 \
     --linux-flavours amd64 \
+    --linux-packages none \
     --binary-images iso-hybrid \
     --iso-application "Shadowfetch Linux" \
     --iso-publisher "Shadowfetch Project" \
