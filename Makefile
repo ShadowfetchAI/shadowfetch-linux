@@ -37,6 +37,10 @@ REPO_DIR  := $(ROOT)/repo
 LB_DIR    := $(ROOT)/live-build
 
 R2_BUCKET ?= shadowfetch-linux
+# Cloudflare R2 S3-compatible endpoint for this account.
+# (wrangler can't PUT > 300 MiB; aws-cli with R2's S3 API handles multipart.)
+R2_ENDPOINT ?= https://a290a9fad8cfb966c5507b490396acf7.r2.cloudflarestorage.com
+R2_REGION   ?= auto
 
 # Used by sync-from-linux (Mac-side flow): host + path to the build box.
 LINUX_HOST ?= shadowfetch-linux
@@ -141,22 +145,27 @@ sign:
 	@gpg --batch --yes --local-user $(REPO_KEY_ID) --armor --detach-sign --output $(ROOT)/$(ISO_NAME).asc $(ROOT)/$(ISO_NAME)
 	@echo ">>> Signed: $(ROOT)/$(ISO_NAME).asc"
 
-# Upload ISO + APT repo to R2 via wrangler. Wrangler must be authenticated
-# (run 'wrangler login' once on this machine, or set CLOUDFLARE_API_TOKEN).
+# Upload ISO + APT repo to R2 via aws-cli (R2's S3-compatible API).
+# Requires: brew install awscli, and an R2 API token from the Cloudflare
+# dashboard (R2 → Manage R2 API Tokens → Create) exported as:
+#   AWS_ACCESS_KEY_ID=<R2 Access Key ID>
+#   AWS_SECRET_ACCESS_KEY=<R2 Secret Access Key>
+# aws-cli handles multipart automatically, so the 2.9 GB ISO uploads fine.
 publish:
-	@command -v wrangler >/dev/null || { echo "wrangler not installed" >&2; exit 1; }
+	@command -v aws >/dev/null || { echo "aws not installed. Run: brew install awscli" >&2; exit 1; }
+	@test -n "$$AWS_ACCESS_KEY_ID" || { echo "AWS_ACCESS_KEY_ID not set (use your R2 API token Access Key ID)" >&2; exit 1; }
+	@test -n "$$AWS_SECRET_ACCESS_KEY" || { echo "AWS_SECRET_ACCESS_KEY not set (use your R2 API token Secret Access Key)" >&2; exit 1; }
 	@if [ ! -f $(ROOT)/$(ISO_NAME) ]; then echo "No ISO to publish ($(ROOT)/$(ISO_NAME))" >&2; exit 1; fi
 	@if [ ! -f $(ROOT)/$(ISO_NAME).asc ]; then echo "No signature ($(ROOT)/$(ISO_NAME).asc) — run 'make sign'" >&2; exit 1; fi
-	@echo ">>> Uploading ISO + checksum + signature to R2 bucket $(R2_BUCKET)/releases/"
-	@wrangler r2 object put --remote $(R2_BUCKET)/releases/$(ISO_NAME)        --file=$(ROOT)/$(ISO_NAME)        --content-type="application/x-iso9660-image"
-	@wrangler r2 object put --remote $(R2_BUCKET)/releases/$(ISO_NAME).sha256 --file=$(ROOT)/$(ISO_NAME).sha256 --content-type="text/plain"
-	@wrangler r2 object put --remote $(R2_BUCKET)/releases/$(ISO_NAME).asc    --file=$(ROOT)/$(ISO_NAME).asc    --content-type="application/pgp-signature"
-	@echo ">>> Uploading public GPG key to R2 root + apt/"
-	@wrangler r2 object put --remote $(R2_BUCKET)/shadowfetch.gpg.asc     --file=$(REPO_DIR)/shadowfetch.gpg.asc --content-type="application/pgp-keys"
+	@echo ">>> Uploading small files first (sha256, signature, GPG key)"
+	@aws --endpoint-url=$(R2_ENDPOINT) --region=$(R2_REGION) s3 cp $(ROOT)/$(ISO_NAME).sha256 s3://$(R2_BUCKET)/releases/$(ISO_NAME).sha256 --content-type "text/plain"
+	@aws --endpoint-url=$(R2_ENDPOINT) --region=$(R2_REGION) s3 cp $(ROOT)/$(ISO_NAME).asc    s3://$(R2_BUCKET)/releases/$(ISO_NAME).asc    --content-type "application/pgp-signature"
+	@aws --endpoint-url=$(R2_ENDPOINT) --region=$(R2_REGION) s3 cp $(REPO_DIR)/shadowfetch.gpg.asc s3://$(R2_BUCKET)/shadowfetch.gpg.asc --content-type "application/pgp-keys"
 	@echo ">>> Mirroring APT repo (dists/ + pool/) to R2 apt/"
-	@cd $(REPO_DIR) && find dists pool -type f 2>/dev/null | while read f; do \
-		wrangler r2 object put --remote $(R2_BUCKET)/apt/$$f --file=$(REPO_DIR)/$$f >/dev/null && echo "  uploaded apt/$$f"; \
-	done
+	@aws --endpoint-url=$(R2_ENDPOINT) --region=$(R2_REGION) s3 sync $(REPO_DIR)/dists s3://$(R2_BUCKET)/apt/dists --delete
+	@aws --endpoint-url=$(R2_ENDPOINT) --region=$(R2_REGION) s3 sync $(REPO_DIR)/pool  s3://$(R2_BUCKET)/apt/pool  --delete
+	@echo ">>> Uploading ISO ($(ISO_NAME), 2.9 GB, multipart). Progress below."
+	@aws --endpoint-url=$(R2_ENDPOINT) --region=$(R2_REGION) s3 cp $(ROOT)/$(ISO_NAME) s3://$(R2_BUCKET)/releases/$(ISO_NAME) --content-type "application/x-iso9660-image"
 	@echo ">>> Done. Verify:"
 	@echo "    curl -I  https://shadowfetch.com/linux/download/$(ISO_NAME)"
 	@echo "    curl -sI https://shadowfetch.com/linux/apt/dists/$(CODENAME)/InRelease"
