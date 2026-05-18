@@ -148,14 +148,14 @@ publish:
 	@if [ ! -f $(ROOT)/$(ISO_NAME) ]; then echo "No ISO to publish ($(ROOT)/$(ISO_NAME))" >&2; exit 1; fi
 	@if [ ! -f $(ROOT)/$(ISO_NAME).asc ]; then echo "No signature ($(ROOT)/$(ISO_NAME).asc) — run 'make sign'" >&2; exit 1; fi
 	@echo ">>> Uploading ISO + checksum + signature to R2 bucket $(R2_BUCKET)/releases/"
-	@wrangler r2 object put $(R2_BUCKET)/releases/$(ISO_NAME)        --file=$(ROOT)/$(ISO_NAME)        --content-type="application/x-iso9660-image"
-	@wrangler r2 object put $(R2_BUCKET)/releases/$(ISO_NAME).sha256 --file=$(ROOT)/$(ISO_NAME).sha256 --content-type="text/plain"
-	@wrangler r2 object put $(R2_BUCKET)/releases/$(ISO_NAME).asc    --file=$(ROOT)/$(ISO_NAME).asc    --content-type="application/pgp-signature"
+	@wrangler r2 object put --remote $(R2_BUCKET)/releases/$(ISO_NAME)        --file=$(ROOT)/$(ISO_NAME)        --content-type="application/x-iso9660-image"
+	@wrangler r2 object put --remote $(R2_BUCKET)/releases/$(ISO_NAME).sha256 --file=$(ROOT)/$(ISO_NAME).sha256 --content-type="text/plain"
+	@wrangler r2 object put --remote $(R2_BUCKET)/releases/$(ISO_NAME).asc    --file=$(ROOT)/$(ISO_NAME).asc    --content-type="application/pgp-signature"
 	@echo ">>> Uploading public GPG key to R2 root + apt/"
-	@wrangler r2 object put $(R2_BUCKET)/shadowfetch.gpg.asc     --file=$(REPO_DIR)/shadowfetch.gpg.asc --content-type="application/pgp-keys"
+	@wrangler r2 object put --remote $(R2_BUCKET)/shadowfetch.gpg.asc     --file=$(REPO_DIR)/shadowfetch.gpg.asc --content-type="application/pgp-keys"
 	@echo ">>> Mirroring APT repo (dists/ + pool/) to R2 apt/"
 	@cd $(REPO_DIR) && find dists pool -type f 2>/dev/null | while read f; do \
-		wrangler r2 object put $(R2_BUCKET)/apt/$$f --file=$(REPO_DIR)/$$f >/dev/null && echo "  uploaded apt/$$f"; \
+		wrangler r2 object put --remote $(R2_BUCKET)/apt/$$f --file=$(REPO_DIR)/$$f >/dev/null && echo "  uploaded apt/$$f"; \
 	done
 	@echo ">>> Done. Verify:"
 	@echo "    curl -I  https://shadowfetch.com/linux/download/$(ISO_NAME)"
