@@ -1,0 +1,30 @@
+#!/bin/sh
+# Shadowfetch Linux — live-build configuration
+# This is the main config script live-build runs to set up the build.
+
+set -e
+
+lb config noauto \
+    --distribution testing \
+    --archive-areas "main contrib non-free non-free-firmware" \
+    --debian-installer live \
+    --debian-installer-gui true \
+    --architectures amd64 \
+    --linux-flavours amd64 \
+    --binary-images iso-hybrid \
+    --iso-application "Shadowfetch Linux" \
+    --iso-publisher "Shadowfetch Project" \
+    --iso-volume "SHADOWFETCH" \
+    --bootappend-live "boot=live components username=shadow hostname=shadowfetch quiet splash" \
+    --bootloaders "grub-efi,syslinux" \
+    --memtest none \
+    --apt-recommends true \
+    --apt-source-archives false \
+    --backports false \
+    --updates true \
+    --security true \
+    --mirror-bootstrap "http://deb.debian.org/debian/" \
+    --mirror-binary "http://deb.debian.org/debian/" \
+    --firmware-chroot true \
+    --firmware-binary true \
+    "${@}"

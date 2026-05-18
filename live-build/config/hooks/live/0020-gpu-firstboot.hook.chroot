@@ -1,0 +1,74 @@
+#!/bin/bash
+# Shadowfetch hook: 0020-gpu-firstboot
+# Sets up a first-boot service that detects GPU and configures drivers.
+
+set -e
+
+echo "[shadowfetch] Installing GPU detection service..."
+
+cat > /usr/local/sbin/shadowfetch-gpu-detect <<'SCRIPT'
+#!/bin/bash
+# Runs once on first boot. Detects GPU and adjusts driver setup.
+
+LOG=/var/log/shadowfetch-gpu-detect.log
+exec >>"$LOG" 2>&1
+
+echo "=== shadowfetch-gpu-detect $(date) ==="
+
+GPU_INFO=$(lspci | grep -iE 'vga|3d|display')
+echo "Detected GPU(s):"
+echo "$GPU_INFO"
+
+HAS_NVIDIA=false
+HAS_AMD=false
+HAS_INTEL=false
+
+echo "$GPU_INFO" | grep -qi nvidia && HAS_NVIDIA=true
+echo "$GPU_INFO" | grep -qiE 'amd|ati|radeon' && HAS_AMD=true
+echo "$GPU_INFO" | grep -qi intel && HAS_INTEL=true
+
+if ! $HAS_NVIDIA; then
+    echo "No NVIDIA GPU detected. Removing proprietary NVIDIA stack to reclaim space."
+    apt-get purge -y \
+        'nvidia-*' \
+        'libnvidia-*' \
+        'firmware-nvidia-*' || true
+    apt-get autoremove -y || true
+fi
+
+if $HAS_NVIDIA; then
+    echo "NVIDIA detected. Ensuring driver is active."
+    nvidia-smi || echo "nvidia-smi failed; user may need to reboot."
+
+    # If hybrid (NVIDIA + Intel/AMD), set prime to on-demand by default
+    if $HAS_INTEL || $HAS_AMD; then
+        echo "Hybrid GPU setup. Configuring PRIME on-demand."
+        prime-select on-demand || true
+    fi
+fi
+
+systemctl disable shadowfetch-gpu-detect.service
+echo "=== done ==="
+SCRIPT
+
+chmod +x /usr/local/sbin/shadowfetch-gpu-detect
+
+cat > /etc/systemd/system/shadowfetch-gpu-detect.service <<'EOF'
+[Unit]
+Description=Shadowfetch first-boot GPU detection
+After=network.target
+ConditionPathExists=!/var/lib/shadowfetch/gpu-detect-done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/shadowfetch-gpu-detect
+ExecStartPost=/bin/sh -c 'mkdir -p /var/lib/shadowfetch && touch /var/lib/shadowfetch/gpu-detect-done'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl enable shadowfetch-gpu-detect.service
+
+echo "[shadowfetch] GPU detection service installed."

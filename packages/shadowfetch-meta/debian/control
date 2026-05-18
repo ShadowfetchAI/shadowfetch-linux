@@ -1,0 +1,45 @@
+Source: shadowfetch-meta
+Section: metapackages
+Priority: optional
+Maintainer: Shadowfetch Project <maintainers@shadowfetch.example>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Homepage: https://shadowfetch.example/
+
+Package: shadowfetch-desktop
+Architecture: all
+Depends:
+ ${misc:Depends},
+ shadowfetch-themes (= ${binary:Version}),
+ shadowfetch-defaults (= ${binary:Version}),
+ shadowfetch-branding (= ${binary:Version}),
+ shadowfetch-welcome (= ${binary:Version}),
+ shadowfetch-creative-base (= ${binary:Version}),
+ kde-plasma-desktop,
+ sddm,
+ pipewire,
+ pipewire-pulse,
+ wireplumber,
+ network-manager,
+ flatpak,
+ plasma-discover-backend-flatpak
+Description: Shadowfetch creative workstation (KDE Plasma edition)
+ Shadowfetch is a Debian-based Linux distribution for visual artists,
+ musicians, and video creators. This meta-package installs the full
+ Shadowfetch desktop experience, including the KDE Plasma session,
+ the creative-app baseline, themes, branding, and the welcome tool.
+
+Package: shadowfetch-creative-base
+Architecture: all
+Depends:
+ ${misc:Depends},
+ gimp, krita, inkscape, blender,
+ darktable, rawtherapee,
+ ardour, audacity, lmms, carla,
+ lsp-plugins, x42-plugins, calf-plugins,
+ kdenlive, obs-studio,
+ ffmpeg,
+ fonts-inter, fonts-jetbrains-mono
+Description: Shadowfetch creative app baseline
+ Installs the core set of creative applications Shadowfetch users
+ expect: 2D, 3D, photo, audio, and video tools.

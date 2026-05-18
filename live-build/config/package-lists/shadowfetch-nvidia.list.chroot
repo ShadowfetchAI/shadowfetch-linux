@@ -1,0 +1,21 @@
+# Shadowfetch NVIDIA support
+# Proprietary drivers + tooling, baked in per user spec.
+# A first-boot hook will detect GPU and remove these if AMD/Intel detected,
+# so we don't push the nvidia stack onto users who don't need it.
+
+nvidia-driver
+nvidia-driver-libs
+nvidia-driver-bin
+nvidia-settings
+nvidia-vulkan-icd
+libnvidia-encode1
+libnvidia-decode1
+nvidia-vaapi-driver
+firmware-nvidia-gsp
+
+# CUDA runtime for creative apps that benefit (Blender, DaVinci Resolve, ML tools)
+nvidia-cuda-toolkit
+nvidia-cudnn
+
+# For mixed-GPU laptops
+nvidia-prime

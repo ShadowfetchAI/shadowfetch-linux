@@ -1,0 +1,96 @@
+# Shadowfetch core system packages
+# These are required regardless of the variant being built.
+
+# Kernel and bootloader
+linux-image-amd64
+linux-headers-amd64
+firmware-linux
+firmware-linux-nonfree
+firmware-misc-nonfree
+firmware-iwlwifi
+firmware-realtek
+firmware-atheros
+firmware-brcm80211
+intel-microcode
+amd64-microcode
+grub-efi-amd64
+grub-pc-bin
+shim-signed
+efibootmgr
+
+# Live system essentials
+live-boot
+live-config
+live-config-systemd
+live-tools
+
+# Installer (Calamares — themed separately)
+calamares
+calamares-settings-debian
+qml-module-qtquick2
+qml-module-qtquick-controls
+qml-module-qtquick-controls2
+
+# Base utilities
+sudo
+network-manager
+network-manager-gnome
+wpasupplicant
+pipewire
+pipewire-pulse
+pipewire-alsa
+wireplumber
+pipewire-audio
+bluetooth
+bluez
+flatpak
+plasma-discover-backend-flatpak
+
+# Performance and resilience
+zram-tools
+earlyoom
+tuned
+preload
+
+# Filesystems
+btrfs-progs
+exfatprogs
+ntfs-3g
+dosfstools
+
+# Shell and terminal basics
+zsh
+fish
+bash-completion
+htop
+btop
+neofetch
+fastfetch
+curl
+wget
+git
+vim
+nano
+build-essential
+
+# Codecs and multimedia plumbing
+ffmpeg
+gstreamer1.0-plugins-base
+gstreamer1.0-plugins-good
+gstreamer1.0-plugins-bad
+gstreamer1.0-plugins-ugly
+gstreamer1.0-libav
+gstreamer1.0-vaapi
+libdvd-pkg
+
+# Fonts (curated default set)
+fonts-inter
+fonts-jetbrains-mono
+fonts-firacode
+fonts-noto
+fonts-noto-color-emoji
+fonts-noto-cjk
+fonts-recursive
+fonts-roboto
+fonts-liberation
+fonts-cantarell

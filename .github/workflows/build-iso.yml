@@ -1,0 +1,55 @@
+name: Build Shadowfetch ISO
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            live-build live-config live-boot \
+            debhelper devscripts equivs dh-python \
+            reprepro gnupg \
+            xorriso isolinux syslinux-common \
+            grub-pc-bin grub-efi-amd64-bin mtools
+
+      - name: Build custom packages
+        run: make packages
+
+      - name: Build ISO
+        run: sudo make iso
+
+      - name: Compute checksums
+        run: |
+          sha256sum *.iso > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shadowfetch-iso
+          path: |
+            *.iso
+            SHA256SUMS
+          retention-days: 14
+
+      - name: Create release on tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            *.iso
+            SHA256SUMS
+          draft: true

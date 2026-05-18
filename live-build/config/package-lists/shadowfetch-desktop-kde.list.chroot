@@ -1,0 +1,54 @@
+# Shadowfetch desktop — KDE Plasma stack
+# Plasma 6 on Debian testing — modern, Wayland-first, properly themed.
+
+# Plasma core
+kde-plasma-desktop
+plasma-workspace
+plasma-workspace-wayland
+plasma-nm
+plasma-pa
+plasma-systemmonitor
+plasma-disks
+plasma-firewall
+plasma-vault
+powerdevil
+bluedevil
+kde-config-sddm
+sddm
+sddm-theme-debian-breeze
+
+# Wayland session bits
+xwayland
+qtwayland5
+kwin-wayland
+
+# KDE applications worth shipping by default
+dolphin
+konsole
+kate
+ark
+spectacle
+gwenview
+okular
+kcalc
+kfind
+filelight
+kcolorchooser
+partitionmanager
+kdeconnect
+plasma-browser-integration
+kio-extras
+kio-gdrive
+
+# Theming infrastructure
+qt5-style-kvantum
+qt5-style-kvantum-themes
+papirus-icon-theme
+kde-style-breeze
+breeze-cursor-theme
+
+# Plasma extras useful for creators
+krunner
+plasma-thunderbolt
+print-manager
+colord-kde

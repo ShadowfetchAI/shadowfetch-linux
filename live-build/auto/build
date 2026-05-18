@@ -1,0 +1,3 @@
+#!/bin/sh
+set -e
+lb build "${@}" 2>&1 | tee shadowfetch-build.log

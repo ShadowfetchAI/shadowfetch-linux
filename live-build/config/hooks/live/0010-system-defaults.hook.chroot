@@ -1,0 +1,60 @@
+#!/bin/bash
+# Shadowfetch live-build hook: 0010-system-defaults
+# Runs in the chroot during ISO build to set system-level defaults.
+
+set -e
+
+echo "[shadowfetch] Configuring system defaults..."
+
+# Enable services
+systemctl enable NetworkManager
+systemctl enable sddm
+systemctl enable bluetooth
+systemctl enable earlyoom
+systemctl enable zramswap
+systemctl enable tuned
+
+# Disable services we don't want by default
+systemctl disable apt-daily.service apt-daily-upgrade.service 2>/dev/null || true
+
+# Set the default tuned profile to workstation
+mkdir -p /etc/tuned
+echo "desktop" > /etc/tuned/active_profile
+
+# zram config — half of RAM, zstd compression
+cat > /etc/default/zramswap <<'EOF'
+ALGO=zstd
+PERCENT=50
+PRIORITY=100
+EOF
+
+# earlyoom config — keep system responsive when creative apps OOM
+cat > /etc/default/earlyoom <<'EOF'
+EARLYOOM_ARGS="-r 60 -m 5 -s 10 --avoid '(^|/)(init|systemd|sshd|kwin_wayland|kwin_x11|plasmashell|sddm)$' --prefer '(^|/)(chrom|firefox|blender|kdenlive|ardour|davinci|GIMP|krita|inkscape)$'"
+EOF
+
+# /etc/os-release branding
+cat > /etc/os-release <<'EOF'
+NAME="Shadowfetch"
+PRETTY_NAME="Shadowfetch Linux"
+ID=shadowfetch
+ID_LIKE=debian
+VERSION="1.0 (Umbra)"
+VERSION_ID="1.0"
+VERSION_CODENAME=umbra
+HOME_URL="https://shadowfetch.example/"
+SUPPORT_URL="https://shadowfetch.example/support"
+BUG_REPORT_URL="https://shadowfetch.example/bugs"
+EOF
+
+# /etc/issue and /etc/issue.net
+echo "Shadowfetch Linux 1.0 \\n \\l" > /etc/issue
+echo "Shadowfetch Linux 1.0" > /etc/issue.net
+
+# Hostname
+echo "shadowfetch" > /etc/hostname
+
+# Flatpak: add Flathub
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || true
+
+echo "[shadowfetch] System defaults configured."

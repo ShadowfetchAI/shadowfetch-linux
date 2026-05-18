@@ -1,0 +1,4 @@
+#!/bin/sh
+# Cleans up the live-build working tree
+set -e
+lb clean "${@}"

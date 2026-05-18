@@ -1,0 +1,87 @@
+# Shadowfetch creative workstation packages
+# The core reason this distro exists.
+
+# === 2D / Visual ===
+gimp
+gimp-data-extras
+gimp-plugin-registry
+krita
+inkscape
+inkscape-extensions
+scribus
+
+# === 3D ===
+blender
+freecad
+openscad
+meshlab
+
+# === Photography / Raw ===
+darktable
+rawtherapee
+digikam
+hugin
+luminance-hdr
+
+# === Audio production ===
+ardour
+audacity
+lmms
+hydrogen
+qtractor
+musescore3
+mixxx
+rosegarden
+carla
+qpwgraph
+helvum
+
+# LV2 / LADSPA plugin sets
+lsp-plugins
+x42-plugins
+calf-plugins
+zynaddsubfx
+swh-plugins
+mda-lv2
+guitarix
+dragonfly-reverb
+
+# === Video ===
+kdenlive
+shotcut
+openshot-qt
+obs-studio
+v4l2loopback-dkms
+v4l2loopback-utils
+handbrake
+mkvtoolnix-gui
+mediainfo-gui
+
+# === Streaming / capture ===
+simplescreenrecorder
+peek
+
+# === Color management ===
+argyll
+displaycal
+colord
+gnome-color-manager
+
+# === Vector / typography / design ===
+fontforge
+fontmatrix
+gucharmap
+
+# === Live coding / generative ===
+sonic-pi
+puredata
+processing
+
+# === Utilities for creatives ===
+imagemagick
+graphicsmagick
+exiftool
+jpegoptim
+optipng
+oxipng
+webp
