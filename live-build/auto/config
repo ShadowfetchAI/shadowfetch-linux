@@ -6,6 +6,7 @@ set -e
 
 lb config noauto \
     --mode debian \
+    --initsystem systemd \
     --distribution testing \
     --archive-areas "main contrib non-free non-free-firmware" \
     --debian-installer live \
