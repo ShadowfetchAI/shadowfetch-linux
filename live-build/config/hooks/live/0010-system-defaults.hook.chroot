@@ -57,6 +57,12 @@ fi
 echo "Shadowfetch Linux 1.0 \\n \\l" > /etc/issue
 echo "Shadowfetch Linux 1.0" > /etc/issue.net
 
+# /etc/motd — copied from shadowfetch-branding's canonical source
+# (avoids conffile-conflict with base-files which also ships /etc/motd)
+if [ -f /usr/share/shadowfetch/motd ]; then
+    cp /usr/share/shadowfetch/motd /etc/motd
+fi
+
 # Hostname
 echo "shadowfetch" > /etc/hostname
 

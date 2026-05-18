@@ -4,6 +4,9 @@
 # Shadowfetch metas (from our local apt repo, wired in via archives/)
 shadowfetch-desktop
 shadowfetch-creative-base
+# shadowfetch-nvidia removed from chroot install — moved to first-boot hook
+# (NVIDIA driver DKMS doesn't build cleanly against the chroot's kernel
+# headers; building during first-boot on the real installed kernel works.)
 
 # Plasma core
 kde-plasma-desktop
