@@ -1,0 +1,33 @@
+Shadowfetch Linux
+Copyright (C) 2026 Shadowfetch
+
+This program is free software: you can redistribute it and/or modify it under the terms
+of the GNU General Public License as published by the Free Software Foundation, either
+version 3 of the License, or (at your option) any later version. See LICENSE.
+
+SCOPE
+  This licence covers the parts Shadowfetch writes and maintains: the KDE look-and-feel
+  and themes, the Welcome assistant, the default configuration, and the creative and
+  desktop metapackages.
+
+  It does NOT relicense the rest of the system. Almost everything on a Shadowfetch Linux
+  installation comes straight from upstream free software projects under their own
+  licences — Debian's archive (GPL, LGPL, MIT, BSD, Apache-2.0 and other DFSG-free
+  licences), the Linux kernel (GPL-2.0), KDE Plasma 6 (GPL-2.0/3.0, LGPL-2.1/3.0),
+  Calamares (GPL-3.0-or-later) and others. Each package carries its own copyright and
+  licence text in /usr/share/doc/<package>/copyright.
+
+TRADEMARKS
+  The Shadowfetch name, wordmark and emblem are trademarks of Shadowfetch and are not
+  licensed for reuse. As permitted by GPL-3.0 section 7(e), this reservation does not
+  restrict any other right the licence grants you.
+
+  Debian is a registered trademark of Software in the Public Interest, Inc.
+
+CORRESPONDING SOURCE
+  For every binary Shadowfetch distributes, the complete corresponding source is
+  available under the same terms for at least three years, published in the main/source
+  component of the signed Shadowfetch APT repository — no request or fee required:
+
+    deb-src [signed-by=/etc/apt/keyrings/shadowfetch.gpg] \
+      https://www.shadowfetch.com/linux/apt/ umbra main

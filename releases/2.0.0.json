@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "latest": "2.0.0",
+  "releases": {
+    "2.0.0": {
+      "codename": "Umbra",
+      "released": "2026-07-21",
+      "arch": "amd64",
+      "file": "shadowfetch-2.0.0-amd64.iso",
+      "size": 4486000640,
+      "sha256": "0cbf9b90a4e561c57167cbac55d6fc4d02efc3dbd12a9c97c5034afc9fe6c671",
+      "signing_key_fpr": "8F13CE1535EE1F4A2916A1F73C5C900B7BE80CA1",
+      "base": "Debian Testing",
+      "desktop": "KDE Plasma 6",
+      "sources": [
+        { "type": "https", "priority": 1,
+          "url": "https://www.shadowfetch.com/linux/download/shadowfetch-2.0.0-amd64.iso" }
+      ],
+      "signature": "https://www.shadowfetch.com/linux/download/shadowfetch-2.0.0-amd64.iso.asc",
+      "github_release": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/tag/v2.0.0"
+    }
+  }
+}
