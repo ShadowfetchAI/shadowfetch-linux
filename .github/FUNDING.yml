@@ -1,0 +1,4 @@
+# The named key, not a `custom:` entry. GitHub emits `custom:` values verbatim as
+# hrefs with no validation, so a bare "buymeacoffee.com/name" resolves relative to
+# github.com and 404s — a bug GitHub's own documentation example contains.
+buy_me_a_coffee: shadowfetch
