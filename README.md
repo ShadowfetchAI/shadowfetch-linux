@@ -1,5 +1,7 @@
 # Shadowfetch Linux
 
+[![Support development](https://img.shields.io/badge/Support%20development-Buy%20Me%20a%20Coffee-FFDD00?style=flat-square&logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/shadowfetch)
+
 A private, AI-ready creative workstation built on Debian — KDE Plasma 6, themed end to
 end, with safe updates, recovery, local AI and the creative tools already working.
 
@@ -54,3 +56,26 @@ like everything else.
 
 Debian is a registered trademark of Software in the Public Interest, Inc. Shadowfetch Linux
 is an independent derivative, not affiliated with or endorsed by the Debian project.
+
+## Support development
+
+Shadowfetch is built and maintained by one person. If it saved you an afternoon,
+you can put something toward the time that goes into it:
+
+[![Support development](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/shadowfetch)
+
+To be straight about what the money is for: the website and the ISO mirror cost
+about **$5 a month** to run, and the object store charges nothing for download
+traffic. This is not a bandwidth appeal. It funds development time — the hours
+that go into builds, hardware fixes and the AI tooling.
+
+There is a $1/month membership on that page because somebody joined it. It buys
+occasional contact and nothing more: no schedule, no newsletter, no perks with a
+delivery date. A one-person project should not promise what it cannot service.
+
+**Things that help as much as money**
+
+- A reproducible bug report — the hardware, the firmware mode, and where it
+  stopped. Faults on hardware nobody here owns get fixed no other way.
+- Telling someone the distro exists.
+- Testing a release candidate before it ships.
