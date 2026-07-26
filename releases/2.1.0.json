@@ -1,0 +1,63 @@
+{
+  "schema": "shadowfetch.linux-release.v1",
+  "version": "2.1.0",
+  "codename": "Umbra",
+  "title": "Audible",
+  "channel": "stable",
+  "date": "2026-07-26",
+  "architecture": "amd64",
+  "base": "Debian testing",
+  "desktop": "KDE Plasma 6",
+  "boot": [
+    "BIOS",
+    "UEFI"
+  ],
+  "iso": {
+    "filename": "shadowfetch-2.1.0-amd64.iso",
+    "url": "https://www.shadowfetch.com/linux/download/shadowfetch-2.1.0-amd64.iso",
+    "mediaType": "application/x-iso9660-image",
+    "sizeBytes": 4509110272,
+    "sizeLabel": "4.51 GB (4.20 GiB)",
+    "sha256": "71ebae6632579b0f5d890dae7fc458edc99d01d0b9c6f28d40cddfaddd6cbe30",
+    "hybrid": true
+  },
+  "signature": {
+    "url": "https://www.shadowfetch.com/linux/download/shadowfetch-2.1.0-amd64.iso.asc",
+    "type": "openpgp-detached-armored"
+  },
+  "signingKey": {
+    "fingerprint": "8F13CE1535EE1F4A2916A1F73C5C900B7BE80CA1",
+    "fingerprintFormatted": "8F13 CE15 35EE 1F4A 2916  A1F7 3C5C 900B 7BE8 0CA1",
+    "url": "https://www.shadowfetch.com/linux/shadowfetch.gpg.asc"
+  },
+  "mirrors": {
+    "githubRelease": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/tag/v2.1.0",
+    "checksums": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/download/v2.1.0/SHA256SUMS",
+    "signature": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/download/v2.1.0/shadowfetch-2.1.0-amd64.iso.asc",
+    "torrent": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/download/v2.1.0/shadowfetch-2.1.0-amd64.iso.torrent"
+  },
+  "pages": {
+    "release": "https://www.shadowfetch.com/linux/changelog#v2-1-0",
+    "download": "https://www.shadowfetch.com/linux/download",
+    "verify": "https://www.shadowfetch.com/linux/verify",
+    "install": "https://www.shadowfetch.com/linux/install",
+    "knownIssues": "https://www.shadowfetch.com/linux/known-issues"
+  },
+  "summary": "Shadowfetch Linux 2.1.0 \u00abUmbra\u00bb \u2014 a Debian-testing derivative with KDE Plasma 6. This release ships Intel Sound Open Firmware and the matching ALSA use-case profiles, so laptops whose audio DSP previously loaded no firmware and played nothing now have working sound out of the box. It also adds shadowfetch-facts, a read-only hardware inventory that records the source of every reading, and gives all sixteen helper commands a --help that is safe to run.",
+  "limitations": [
+    {
+      "id": "fat32-single-file-limit",
+      "summary": "The ISO cannot be copied onto a FAT32-formatted USB stick.",
+      "detail": "FAT32 caps a single file at 4 GiB (4,294,967,295 bytes). This ISO is 4,509,110,272 bytes \u2014 214,142,977 bytes (204 MiB) over that limit \u2014 so a plain file copy to a FAT32 stick fails with \"file too large\". Write the ISO to the USB device with an image writer (balenaEtcher, KDE ISO Image Writer, GNOME Disks) or dd instead of copying it onto a mounted FAT32 filesystem."
+    }
+  ],
+  "provenance": {
+    "isoSizeBytes": "stat of /home/rtx5060ti/projects/shadowfetch/shadowfetch-2.1.0-amd64.iso at build time, 2026-07-26.",
+    "sha256": "sha256sum of shadowfetch-2.1.0-amd64.iso computed from the built artifact, 2026-07-26.",
+    "signingKeyFingerprint": "Published on /linux/download and /linux/verify.",
+    "versionCodenameDate": "Makefile VERSION and packages/*/debian/changelog, all 2.1.0-1.",
+    "note": "This directory is the canonical machine-readable record of a release. public/linux/releases.json and public/linux/releases.atom are GENERATED from it by scripts/build_release_feed.mjs \u2014 edit this file, then re-run the generator. Do not edit the generated files by hand.",
+    "verification": "ISO verified before publication: 26/26 static checks (SOF firmware present in the squashfs, squashfs under the FAT32 per-file ceiling with 31 MiB spare, all packages at 2.1.0-1, dpkg database consistent) plus a QEMU boot in BIOS and UEFI at the published 4 GiB minimum.",
+    "gap": "Manifests exist for 2.0.0, 2.0.1 and 2.1.0. Earlier releases (1.9.0 back to 1.0.7) appear in the /linux/changelog page data but have no published ISO, checksum or signature, so no manifest is written for them rather than inventing artifact URLs that would 404."
+  }
+}

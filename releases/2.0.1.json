@@ -1,25 +1,28 @@
 {
   "schema": "shadowfetch.linux-release.v1",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "codename": "Umbra",
-  "title": "Bedrock",
+  "title": "Reachable",
   "channel": "stable",
-  "date": "2026-07-21",
+  "date": "2026-07-24",
   "architecture": "amd64",
   "base": "Debian testing",
   "desktop": "KDE Plasma 6",
-  "boot": ["BIOS", "UEFI"],
+  "boot": [
+    "BIOS",
+    "UEFI"
+  ],
   "iso": {
-    "filename": "shadowfetch-2.0.0-amd64.iso",
-    "url": "https://www.shadowfetch.com/linux/download/shadowfetch-2.0.0-amd64.iso",
+    "filename": "shadowfetch-2.0.1-amd64.iso",
+    "url": "https://www.shadowfetch.com/linux/download/shadowfetch-2.0.1-amd64.iso",
     "mediaType": "application/x-iso9660-image",
-    "sizeBytes": 4486000640,
-    "sizeLabel": "4.49 GB (4.18 GiB)",
-    "sha256": "0cbf9b90a4e561c57167cbac55d6fc4d02efc3dbd12a9c97c5034afc9fe6c671",
+    "sizeBytes": 4498606080,
+    "sizeLabel": "4.50 GB (4.19 GiB)",
+    "sha256": "b5e7fbe232027958aac2296c2e623a56e20f85c61d444fd59a784c2edbdb04be",
     "hybrid": true
   },
   "signature": {
-    "url": "https://www.shadowfetch.com/linux/download/shadowfetch-2.0.0-amd64.iso.asc",
+    "url": "https://www.shadowfetch.com/linux/download/shadowfetch-2.0.1-amd64.iso.asc",
     "type": "openpgp-detached-armored"
   },
   "signingKey": {
@@ -28,19 +31,19 @@
     "url": "https://www.shadowfetch.com/linux/shadowfetch.gpg.asc"
   },
   "mirrors": {
-    "githubRelease": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/tag/v2.0.0",
-    "checksums": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/download/v2.0.0/SHA256SUMS",
-    "signature": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/download/v2.0.0/shadowfetch-2.0.0-amd64.iso.asc",
-    "torrent": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/download/v2.0.0/shadowfetch-2.0.0-amd64.iso.torrent"
+    "githubRelease": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/tag/v2.0.1",
+    "checksums": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/download/v2.0.1/SHA256SUMS",
+    "signature": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/download/v2.0.1/shadowfetch-2.0.1-amd64.iso.asc",
+    "torrent": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/download/v2.0.1/shadowfetch-2.0.1-amd64.iso.torrent"
   },
   "pages": {
-    "release": "https://www.shadowfetch.com/linux/changelog#v2-0-0",
+    "release": "https://www.shadowfetch.com/linux/changelog#v2-0-1",
     "download": "https://www.shadowfetch.com/linux/download",
     "verify": "https://www.shadowfetch.com/linux/verify",
     "install": "https://www.shadowfetch.com/linux/install",
     "knownIssues": "https://www.shadowfetch.com/linux/known-issues"
   },
-  "summary": "Shadowfetch Linux 2.0.0 «Umbra» — a Debian-testing derivative with KDE Plasma 6, built 2026-07-21. amd64 hybrid ISO, BIOS and UEFI, 4.49 GB (4.18 GiB).",
+  "summary": "Shadowfetch Linux 2.0.1 «Umbra» — a Debian-testing derivative with KDE Plasma 6. This release repairs apt on installed systems, makes the on-device AI tools reachable from the application menu, and adds virtual-machine guest integration.",
   "limitations": [
     {
       "id": "fat32-single-file-limit",

@@ -1,0 +1,63 @@
+{
+  "schema": "shadowfetch.linux-release.v1",
+  "version": "2.1.1",
+  "codename": "Umbra",
+  "title": "Accurate",
+  "channel": "stable",
+  "date": "2026-07-26",
+  "architecture": "amd64",
+  "base": "Debian testing",
+  "desktop": "KDE Plasma 6",
+  "boot": [
+    "BIOS",
+    "UEFI"
+  ],
+  "iso": {
+    "filename": "shadowfetch-2.1.1-amd64.iso",
+    "url": "https://www.shadowfetch.com/linux/download/shadowfetch-2.1.1-amd64.iso",
+    "mediaType": "application/x-iso9660-image",
+    "sizeBytes": 4510564352,
+    "sizeLabel": "4.51 GB (4.20 GiB)",
+    "sha256": "f5fe0f20dd24176839d0443f75ac4110587dff1a369785abdbe2121e213afdba",
+    "hybrid": true
+  },
+  "signature": {
+    "url": "https://www.shadowfetch.com/linux/download/shadowfetch-2.1.1-amd64.iso.asc",
+    "type": "openpgp-detached-armored"
+  },
+  "signingKey": {
+    "fingerprint": "8F13CE1535EE1F4A2916A1F73C5C900B7BE80CA1",
+    "fingerprintFormatted": "8F13 CE15 35EE 1F4A 2916  A1F7 3C5C 900B 7BE8 0CA1",
+    "url": "https://www.shadowfetch.com/linux/shadowfetch.gpg.asc"
+  },
+  "mirrors": {
+    "githubRelease": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/tag/v2.1.1",
+    "checksums": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/download/v2.1.1/SHA256SUMS",
+    "signature": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/download/v2.1.1/shadowfetch-2.1.1-amd64.iso.asc",
+    "torrent": "https://github.com/ShadowfetchAI/shadowfetch-linux/releases/download/v2.1.1/shadowfetch-2.1.1-amd64.iso.torrent"
+  },
+  "pages": {
+    "release": "https://www.shadowfetch.com/linux/changelog#v2-1-1",
+    "download": "https://www.shadowfetch.com/linux/download",
+    "verify": "https://www.shadowfetch.com/linux/verify",
+    "install": "https://www.shadowfetch.com/linux/install",
+    "knownIssues": "https://www.shadowfetch.com/linux/known-issues"
+  },
+  "summary": "Shadowfetch Linux 2.1.1 «Umbra» — a Debian-testing derivative with KDE Plasma 6. A correctness release: 2.1.0 shipped identifying itself as 2.0.1 in /etc/os-release, the login banner, the installer branding, the SDDM theme and every helper command. The build now stamps the version from the version it was invoked with, and the commands read it at run time rather than carrying a compiled-in constant. It also gives shadowfetch-welcome, the graphical first-boot wizard, the --help and --version it never had — previously asking it for a version opened the flow that installs Flathub applications and the local AI stack. Everything 2.1.0 delivered is unchanged: Intel Sound Open Firmware with the matching ALSA profiles, Cirrus amplifier firmware, and shadowfetch-facts.",
+  "limitations": [
+    {
+      "id": "fat32-single-file-limit",
+      "summary": "The ISO cannot be copied onto a FAT32-formatted USB stick.",
+      "detail": "FAT32 caps a single file at 4 GiB (4,294,967,295 bytes). This ISO is 4,510,564,352 bytes — 215,597,057 bytes (206 MiB) over that limit — so a plain file copy to a FAT32 stick fails with \"file too large\". Write the ISO to the USB device with an image writer (balenaEtcher, KDE ISO Image Writer, GNOME Disks) or dd instead of copying it onto a mounted FAT32 filesystem."
+    }
+  ],
+  "provenance": {
+    "isoSizeBytes": "stat of /home/rtx5060ti/projects/shadowfetch/shadowfetch-2.1.1-amd64.iso at publication time, 2026-07-26.",
+    "sha256": "sha256sum of shadowfetch-2.1.1-amd64.iso computed from the built artifact, 2026-07-26.",
+    "signingKeyFingerprint": "Published on /linux/download and /linux/verify.",
+    "versionCodenameDate": "Makefile VERSION and packages/*/debian/changelog, all 2.1.1-1.",
+    "note": "This directory is the canonical machine-readable record of a release. public/linux/releases.json and public/linux/releases.atom are GENERATED from it by scripts/build_release_feed.mjs — edit this file, then re-run the generator. Do not edit the generated files by hand.",
+    "verification": "34 static checks passed, 0 failed, 2 skipped, run against the built image rather than the source tree. The checks include every place the system names its own version (os-release, the version file, both issue files, the Calamares branding, the SDDM theme, LICENSES and SOURCES), that no helper command carries a compiled-in version, that all eighteen answer --version, package versions in the image's own dpkg database, SOF and Cirrus firmware presence, and the squashfs against the FAT32 per-file ceiling. Skipped checks are recorded as skipped, never counted as passes.",
+    "gap": "Manifests exist for 2.0.0, 2.0.1, 2.1.0 and 2.1.1. Earlier releases (1.9.0 back to 1.0.7) appear in the /linux/changelog page data but have no published ISO, checksum or signature, so no manifest is written for them rather than inventing artifact URLs that would 404."
+  }
+}
