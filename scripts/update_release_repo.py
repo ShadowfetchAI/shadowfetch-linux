@@ -52,34 +52,64 @@ for src in sorted(SITE_RELEASES.glob("*.json")):
 print(f"manifests synced: {copied or 'already current'}")
 print(f"  releases/ now holds: {sorted(p.name for p in dst.glob('*.json'))}")
 
-# ---- 2. README ----------------------------------------------------------------
-readme = REPO / "README.md"
-t = readme.read_text()
-before = t
+# ---- 2. prose that names the release ------------------------------------------
+# docs/verify.md is the long form the README links to. It walked a reader
+# through verifying 2.0.0 against 2.0.0's checksum: internally consistent, and
+# two releases out of date, which sends anyone following it to an old image.
+TARGETS = ["README.md", "docs/verify.md"]
 
-# Filename everywhere (download URL, curl lines, gpg --verify, sha256sum -c).
-t = re.sub(r"shadowfetch-\d+\.\d+\.\d+-amd64\.iso", name, t)
-# The old checksum, wherever it appears.
-t = re.sub(r"\b[0-9a-f]{64}\b", sha, t)
-# The size line: byte count and binary size together, so they cannot part company.
-t = re.sub(r"\b\d{1,3}(?:,\d{3})+ bytes \(\d+\.\d+ GiB\)",
-           f"{size:,} bytes ({gib:.2f} GiB)", t)
-# The headline.
-t = re.sub(r"Current release: \*\*\d+\.\d+\.\d+ [“\"]Umbra[”\"]\*\* \(\d{4}-\d{2}-\d{2}\)",
-           f'Current release: **{man["version"]} “{man["codename"]}”** ({man["date"]})', t)
 
-readme.write_text(t)
-print("README rewritten" if t != before else "README already current")
+def restate(text: str) -> str:
+    """Rewrite every release fact in one pass, so none can drift from another."""
+    # Filename everywhere: download URL, curl lines, gpg --verify, sha256sum -c.
+    text = re.sub(r"shadowfetch-\d+\.\d+\.\d+-amd64\.iso", name, text)
+    # The checksum, wherever it appears.
+    text = re.sub(r"\b[0-9a-f]{64}\b", sha, text)
+    # Byte count and human size are replaced together so they cannot part
+    # company - which is exactly how 2.1.0's filename ended up beside 2.0.0's
+    # size.
+    text = re.sub(r"\b\d{1,3}(?:,\d{3})+ bytes \(\d+\.\d+ GiB\)",
+                  f"{size:,} bytes ({gib:.2f} GiB)", text)
+    text = re.sub(
+        r"Current release: \*\*\d+\.\d+\.\d+ [“\"]Umbra[”\"]\*\* \(\d{4}-\d{2}-\d{2}\)",
+        f'Current release: **{man["version"]} “{man["codename"]}”** ({man["date"]})',
+        text)
+    return text
+
+
+changed = []
+for rel in TARGETS:
+    f = REPO / rel
+    if not f.is_file():
+        print(f"  NOTE: {rel} absent, skipped")
+        continue
+    orig = f.read_text()
+    new = restate(orig)
+    if new != orig:
+        f.write_text(new)
+        changed.append(rel)
+print(f"rewritten: {changed or 'nothing needed changing'}")
 
 # ---- 3. prove it ---------------------------------------------------------------
-stale_v = sorted(set(re.findall(r"\b[12]\.\d+\.\d+\b", t)) - {V})
-stale_sha = sorted(set(re.findall(r"\b[0-9a-f]{64}\b", t)) - {sha})
-sizes = sorted(set(re.findall(r"\b\d{1,3}(?:,\d{3})+ bytes \(\d+\.\d+ GiB\)", t)))
-print("\nverification of the rewritten README:")
-print(f"  versions present   : {sorted(set(re.findall(r'[12]\\.\\d+\\.\\d+', t)))}")
-print(f"  stale versions     : {stale_v or 'none'}")
-print(f"  stale checksums    : {stale_sha or 'none'}")
-print(f"  size statements    : {sizes}")
-ok = not stale_v and not stale_sha and len(sizes) == 1
-print(f"  consistent         : {'YES' if ok else 'NO'}")
+print("\nverification:")
+ok = True
+for rel in TARGETS:
+    f = REPO / rel
+    if not f.is_file():
+        continue
+    t = f.read_text()
+    versions = sorted(set(re.findall(r"\b[12]\.\d+\.\d+\b", t)))
+    stale_v = [x for x in versions if x != V]
+    shas = sorted(set(re.findall(r"\b[0-9a-f]{64}\b", t)))
+    stale_sha = [x for x in shas if x != sha]
+    sizes = sorted(set(re.findall(r"\b\d{1,3}(?:,\d{3})+ bytes \(\d+\.\d+ GiB\)", t)))
+    good = not stale_v and not stale_sha and len(sizes) <= 1
+    ok = ok and good
+    print(f"  {rel}")
+    print(f"    versions        {versions or 'none'}")
+    print(f"    stale versions  {stale_v or 'none'}")
+    print(f"    checksums       {[s[:12] + '…' for s in shas] or 'none'}")
+    print(f"    stale checksums {[s[:12] + '…' for s in stale_sha] or 'none'}")
+    print(f"    size statements {sizes or 'none'}")
+    print(f"    consistent      {'YES' if good else 'NO'}")
 sys.exit(0 if ok else 1)

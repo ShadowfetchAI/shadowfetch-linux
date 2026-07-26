@@ -15,14 +15,14 @@ They are deliberately spread across providers.
 ## Linux / macOS
 
 ```sh
-curl -O https://www.shadowfetch.com/linux/download/shadowfetch-2.0.0-amd64.iso
-curl -O https://www.shadowfetch.com/linux/download/shadowfetch-2.0.0-amd64.iso.asc
+curl -O https://www.shadowfetch.com/linux/download/shadowfetch-2.1.1-amd64.iso
+curl -O https://www.shadowfetch.com/linux/download/shadowfetch-2.1.1-amd64.iso.asc
 curl -O https://raw.githubusercontent.com/ShadowfetchAI/shadowfetch-linux/main/keys/shadowfetch-release.asc
 
 gpg --import shadowfetch-release.asc
 gpg --fingerprint signing@shadowfetch.com          # compare with the fingerprint above
-gpg --verify shadowfetch-2.0.0-amd64.iso.asc shadowfetch-2.0.0-amd64.iso
-sha256sum -c <<< "0cbf9b90a4e561c57167cbac55d6fc4d02efc3dbd12a9c97c5034afc9fe6c671  shadowfetch-2.0.0-amd64.iso"
+gpg --verify shadowfetch-2.1.1-amd64.iso.asc shadowfetch-2.1.1-amd64.iso
+sha256sum -c <<< "f5fe0f20dd24176839d0443f75ac4110587dff1a369785abdbe2121e213afdba  shadowfetch-2.1.1-amd64.iso"
 ```
 
 On macOS use `shasum -a 256 -c` in place of `sha256sum -c`, and install GnuPG first
@@ -32,7 +32,7 @@ Expected:
 
 ```
 gpg: Good signature from "Shadowfetch Project <signing@shadowfetch.com>"
-shadowfetch-2.0.0-amd64.iso: OK
+shadowfetch-2.1.1-amd64.iso: OK
 ```
 
 **"Good signature" is what matters.** GnuPG will also print:
@@ -48,9 +48,9 @@ after confirming the fingerprint out of band.
 ## Windows (PowerShell)
 
 ```powershell
-Get-FileHash .\shadowfetch-2.0.0-amd64.iso -Algorithm SHA256
+Get-FileHash .\shadowfetch-2.1.1-amd64.iso -Algorithm SHA256
 # compare the output with:
-# 0cbf9b90a4e561c57167cbac55d6fc4d02efc3dbd12a9c97c5034afc9fe6c671
+# f5fe0f20dd24176839d0443f75ac4110587dff1a369785abdbe2121e213afdba
 ```
 
 For the signature install Gpg4win, then run the `gpg --import` / `gpg --verify` commands above.
