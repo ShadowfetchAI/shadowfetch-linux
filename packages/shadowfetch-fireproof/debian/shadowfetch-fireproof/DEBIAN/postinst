@@ -1,0 +1,63 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    configure)
+        # State directory shared with Phoenix. fireproofd writes
+        # fireproof-state.json (rollback carousel) and fireproof-pending
+        # (first-boot-after-update flag) here; both are root-owned, the
+        # directory itself is world-readable so the page and CLI can show
+        # honest state without privileges.
+        mkdir -p /var/lib/shadowfetch
+        chmod 0755 /var/lib/shadowfetch
+
+        # Hard backstop for the update-ownership rule: PackageKit's
+        # offline-update path would apply updates at boot, outside
+        # Fireproof's analyze/verify/rollback protocol. The ISO masks
+        # this at build time; repeating it here keeps it off on a bare
+        # deb install or after an upgrade pulls the unit back in.
+        # PackageKit itself stays - Discover depends on it, and its apt
+        # backend still gets Phoenix Points via the dpkg hooks.
+        if [ -d /run/systemd/system ]; then
+            systemctl mask packagekit-offline-update.service >/dev/null 2>&1 || true
+        fi
+        ;;
+esac
+
+# Automatically added by dh_installsystemd/13.14.1ubuntu5
+if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
+	# The following line should be removed in trixie or trixie+1
+	deb-systemd-helper unmask 'fireproof-postboot.service' >/dev/null || true
+
+	# was-enabled defaults to true, so new installations run enable.
+	if deb-systemd-helper --quiet was-enabled 'fireproof-postboot.service'; then
+		# Enables the unit on first installation, creates new
+		# symlinks on upgrades if the unit file has changed.
+		deb-systemd-helper enable 'fireproof-postboot.service' >/dev/null || true
+	else
+		# Update the statefile to add new symlinks (if any), which need to be
+		# cleaned up on purge. Also remove old symlinks.
+		deb-systemd-helper update-state 'fireproof-postboot.service' >/dev/null || true
+	fi
+fi
+# End automatically added section
+# Automatically added by dh_installsystemd/13.14.1ubuntu5
+if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
+	# The following line should be removed in trixie or trixie+1
+	deb-systemd-helper unmask 'fireproof-postboot.timer' >/dev/null || true
+
+	# was-enabled defaults to true, so new installations run enable.
+	if deb-systemd-helper --quiet was-enabled 'fireproof-postboot.timer'; then
+		# Enables the unit on first installation, creates new
+		# symlinks on upgrades if the unit file has changed.
+		deb-systemd-helper enable 'fireproof-postboot.timer' >/dev/null || true
+	else
+		# Update the statefile to add new symlinks (if any), which need to be
+		# cleaned up on purge. Also remove old symlinks.
+		deb-systemd-helper update-state 'fireproof-postboot.timer' >/dev/null || true
+	fi
+fi
+# End automatically added section
+
+
+exit 0

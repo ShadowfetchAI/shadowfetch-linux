@@ -1,0 +1,32 @@
+shadowfetch-firewatchd (2.1.2-1) unstable; urgency=medium
+
+  * New package for Shadowfetch Linux 2.1.2 "Fire Edition": the Firewatch
+    telemetry daemon, the single always-on sensor source of the release.
+  * Publishes org.shadowfetch.Firewatch1 on the system bus: sensor
+    snapshots (CPU/RAM/PSI, hwmon temps and fans, RAPL watts, GPUs), the
+    flame level + ELI and ELI-work (Ember's idle watchdog consumes the
+    work terms only, so a hot thin laptop still auto-returns to
+    Balanced), the humanized heat map, local llama-server model usage
+    with tokens per second, storage health and throttle events.
+  * Heat-map rows are humanized before publishing: app-*.scope names
+    resolve to the desktop entry's Name and Icon, shadowfetch-llama@<ws>
+    units render as "Agent: <ws>", then systemd unit Description, then
+    /proc/<pid>/comm. The UI never sees a raw cgroup path.
+  * The 2 s sweep reads only cheap /proc/<pid>/stat RSS and CPU for all
+    processes; smaps_rollup PSS is read only for the displayed top-15
+    rows, refreshed every 10 s, keeping the daemon inside its <1% CPU
+    budget on the 8 GB floor machine.
+  * llama-server discovery trusts $XDG_RUNTIME_DIR announce files only
+    when file ownership matches the runtime dir's uid; ports must parse
+    as int 1024-65535; polls go to 127.0.0.1 only via stdlib urllib with
+    a 1 s timeout and size-capped, never-executed response bodies.
+  * Storage health via smartctl --json=c and nvme smart-log; a smartd
+    warning hook posts failures to the daemon's root-only local socket
+    so the badge flips immediately.
+  * Cadence: 2 s while a UI subscription exists, 30 s otherwise.
+    Hardened service unit: ProtectSystem=strict, ProtectHome=read-only,
+    NoNewPrivileges, loopback-only IPAddressAllow, no listening network
+    sockets. NVIDIA via python3-pynvml as a runtime-guarded Recommends,
+    whole-GPU stats only.
+
+ -- Shadowfetch Project <signing@shadowfetch.com>  Thu, 30 Jul 2026 11:30:00 -0400

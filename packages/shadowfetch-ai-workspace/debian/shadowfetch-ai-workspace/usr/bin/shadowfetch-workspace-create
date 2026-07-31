@@ -1,0 +1,73 @@
+#!/bin/sh
+# shadowfetch-workspace-create -- one command from nothing to a private agent
+# workspace with a local model server on localhost.
+#
+# Usage: shadowfetch-workspace-create <name> [<model.gguf path>]
+#
+# Creates ~/Workspaces/<name>/{models,jobs,notes}, picks a free localhost port,
+# writes workspace.conf, and (if a model is given or already downloaded) starts
+# the per-workspace llama-server user unit. Never touches the network: models
+# arrive via the Welcome catalog's checksummed, user-initiated downloader.
+set -u
+
+NAME="${1:-}"
+MODEL="${2:-}"
+[ -n "$NAME" ] || { echo "usage: shadowfetch-workspace-create <name> [model.gguf]" >&2; exit 2; }
+case "$NAME" in
+    *[!a-zA-Z0-9._-]*) echo "workspace name may use letters, digits, . _ - only" >&2; exit 2 ;;
+esac
+
+WS="$HOME/Workspaces/$NAME"
+MODELS_STORE="$HOME/.local/share/shadowfetch/models"
+mkdir -p "$WS/models" "$WS/jobs" "$WS/notes"
+
+# Default model: the argument, else the newest catalog-downloaded gguf.
+if [ -z "$MODEL" ]; then
+    MODEL=$(ls -t "$MODELS_STORE"/*.gguf 2>/dev/null | head -1 || true)
+fi
+
+# A free localhost port, deterministic-ish per workspace, verified free.
+PORT=$(python3 - "$NAME" <<'EOF'
+import socket, sys, zlib
+base = 11000 + (zlib.crc32(sys.argv[1].encode()) % 2000)
+for p in range(base, base + 200):
+    s = socket.socket()
+    try:
+        s.bind(("127.0.0.1", p)); s.close(); print(p); break
+    except OSError:
+        s.close()
+EOF
+)
+[ -n "$PORT" ] || { echo "could not find a free localhost port" >&2; exit 1; }
+
+CONF="$WS/workspace.conf"
+{
+    echo "# Written by shadowfetch-workspace-create $(date '+%F %T')"
+    echo "PORT=$PORT"
+    echo "CTX=8192"
+    if [ -n "$MODEL" ] && [ -f "$MODEL" ]; then
+        echo "MODEL_PATH=$MODEL"
+    else
+        echo "# No model yet: download one from the Welcome catalog, then set:"
+        echo "# MODEL_PATH=$MODELS_STORE/<model>.gguf"
+    fi
+} > "$CONF"
+
+cat > "$WS/notes/README" <<EOF
+Workspace "$NAME"
+  models/ - model files or links for this workspace
+  jobs/   - working files your agent runs against
+  notes/  - yours
+Server: http://127.0.0.1:$PORT (localhost only, never exposed)
+Manage: systemctl --user start|stop shadowfetch-llama@$NAME
+EOF
+
+echo "workspace ready: $WS (port $PORT)"
+if [ -n "$MODEL" ] && [ -f "$MODEL" ]; then
+    systemctl --user daemon-reload
+    systemctl --user enable --now "shadowfetch-llama@$NAME.service" \
+        && echo "model server started: http://127.0.0.1:$PORT ($(basename "$MODEL"))" \
+        || echo "server did not start - check: systemctl --user status shadowfetch-llama@$NAME"
+else
+    echo "no model yet - pick one in Welcome's catalog, then: systemctl --user start shadowfetch-llama@$NAME"
+fi

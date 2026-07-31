@@ -1,0 +1,23 @@
+Package: shadowfetch-firewatchd
+Version: 2.1.2-1
+Architecture: all
+Maintainer: Shadowfetch Project <signing@shadowfetch.com>
+Installed-Size: 83
+Depends: python3, python3-dbus, python3-gi, python3-psutil, dbus, smartmontools, nvme-cli
+Recommends: python3-pynvml, lm-sensors
+Section: admin
+Priority: optional
+Homepage: https://shadowfetch.com/linux/
+Description: Shadowfetch Firewatch telemetry daemon
+ The always-on sensor source behind the Firewatch page of the Shadowfetch
+ Control Center and the single source of the ELI/flame level that Ember
+ Mode consumes. Publishes org.shadowfetch.Firewatch1 on the system bus:
+ CPU/RAM/PSI, hwmon temperatures and fans, RAPL package watts, whole-GPU
+ stats, a per-application heat map with human display names and icons,
+ local llama-server model usage with tokens per second, storage health
+ via smartctl and nvme smart-log, and thermal-throttle events.
+ .
+ The daemon is read-only against the system and generates zero network
+ traffic except polling llama-server metrics on 127.0.0.1. NVIDIA
+ telemetry uses python3-pynvml when present (a Recommends, never a hard
+ dependency) and reports whole-GPU statistics only.

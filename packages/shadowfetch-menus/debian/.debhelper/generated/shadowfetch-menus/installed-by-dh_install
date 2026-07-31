@@ -1,0 +1,8 @@
+./etc/xdg/menus/applications-merged/shadowfetch-launcher.menu
+./usr/share/desktop-directories/shadowfetch-create.directory
+./usr/share/desktop-directories/shadowfetch-develop.directory
+./usr/share/desktop-directories/shadowfetch-communicate.directory
+./usr/share/desktop-directories/shadowfetch-play.directory
+./usr/share/desktop-directories/shadowfetch-protect.directory
+./usr/share/desktop-directories/shadowfetch-system.directory
+./usr/share/desktop-directories/shadowfetch-ai.directory

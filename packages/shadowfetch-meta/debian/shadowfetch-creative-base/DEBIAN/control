@@ -1,0 +1,17 @@
+Package: shadowfetch-creative-base
+Source: shadowfetch-meta
+Version: 2.1.2-1
+Architecture: all
+Maintainer: Shadowfetch Project <signing@shadowfetch.com>
+Installed-Size: 15
+Depends: krita, inkscape, audacity, x42-plugins, calf-plugins, kdenlive, ffmpeg, fonts-inter
+Recommends: fonts-jetbrains-mono, gimp
+Section: metapackages
+Priority: optional
+Homepage: https://shadowfetch.com/linux/
+Description: Shadowfetch creative app baseline
+ Installs the core set of creative applications Shadowfetch users
+ expect: 2D, 3D, photo, audio, and video tools. Packages not currently
+ available in Debian testing under their expected names (blender, lmms,
+ carla, fonts-jetbrains-mono) are listed as Recommends so install
+ doesn't fail — Flatpak fallbacks are offered in the welcome wizard.

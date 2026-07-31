@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Shadowfetch Welcome
+Comment=First-boot setup, bundles and the one-click catalog
+Exec=shadowfetch-welcome
+TryExec=shadowfetch-welcome
+Icon=shadowfetch
+Terminal=false
+# Shadowfetch launcher cleanup: re-filed under AI and Agents
+# (X-Shadowfetch-AI) so the menu's explicit Filename include is not
+# doubled by a System; category match.
+Categories=X-Shadowfetch-AI;
+OnlyShowIn=KDE;
+Keywords=welcome;setup;catalog;bundle;model;ignition;

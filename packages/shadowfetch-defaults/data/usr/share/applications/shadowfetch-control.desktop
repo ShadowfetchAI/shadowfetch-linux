@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Shadowfetch Control Center
+Comment=Updates, system health, recovery and agent tools
+Exec=shadowfetch-control
+Icon=shadowfetch
+Terminal=false
+Categories=System;Settings;
+Keywords=update;health;recovery;agent;system;
+StartupNotify=true

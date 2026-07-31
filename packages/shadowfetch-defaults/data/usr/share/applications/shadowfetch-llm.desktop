@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Pick a Local AI Model
+GenericName=Local LLM picker
+Comment=Choose a Hugging Face model matched to your hardware and run it locally
+Exec=konsole -e bash -c "shadowfetch-llm; exec bash"
+Icon=shadowfetch
+Terminal=false
+Categories=System;Utility;
+Keywords=AI;LLM;model;huggingface;ollama;local;

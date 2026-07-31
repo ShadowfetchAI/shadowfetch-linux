@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=AI Agent Setup Guide
+GenericName=Agent Documentation
+Comment=Read the Shadowfetch guide to setting up Hermes or OpenClaw
+Exec=xdg-open /usr/share/doc/shadowfetch/AGENTS.md
+Icon=help-contents
+Terminal=false
+Categories=System;Documentation;
+Keywords=AI;Agent;guide;help;Hermes;OpenClaw;setup;

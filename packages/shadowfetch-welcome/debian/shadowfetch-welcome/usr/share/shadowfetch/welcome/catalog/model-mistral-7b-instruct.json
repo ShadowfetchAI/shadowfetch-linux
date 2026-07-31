@@ -1,0 +1,13 @@
+{
+  "id": "model-mistral-7b-instruct",
+  "name": "Mistral-7B-Instruct-v0.3 (Q4_K_M GGUF)",
+  "kind": "model",
+  "packages": [],
+  "url": "https://huggingface.co/bartowski/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/Mistral-7B-Instruct-v0.3-Q4_K_M.gguf",
+  "sha256": "FILL-AT-RELEASE",
+  "size_bytes": 4400000000,
+  "license": "Apache-2.0",
+  "min_ram_gb": 7,
+  "requires": ["none"],
+  "blurb": "Better long-form writing and general quality than 4B models. Honest caveat: tight on an 8 GB machine (small context only) and 3-6 tokens/s CPU-only - GPU or 16 GB RAM recommended. 4.4 GB download, needs about 7 GB of RAM while running. Downloaded only when you click, resumable, and verified against its checksum before use."
+}

@@ -1,0 +1,13 @@
+{
+  "id": "model-phi-4-mini-instruct",
+  "name": "Phi-4-mini-instruct 3.8B (Q4_K_M GGUF)",
+  "kind": "model",
+  "packages": [],
+  "url": "https://huggingface.co/unsloth/Phi-4-mini-instruct-GGUF/resolve/main/Phi-4-mini-instruct-Q4_K_M.gguf",
+  "sha256": "FILL-AT-RELEASE",
+  "size_bytes": 2500000000,
+  "license": "MIT",
+  "min_ram_gb": 5,
+  "requires": ["none"],
+  "blurb": "Reasoning, math and structured output at small size - the strongest permissively-licensed sub-4B option. Similar CPU-only speed to Qwen3-4B (roughly 6-12 tokens/s on a modern 8-core CPU), also fine on 8 GB of RAM. 2.5 GB download, needs about 5 GB of RAM while running. Downloaded only when you click, resumable, and verified against its checksum before use."
+}

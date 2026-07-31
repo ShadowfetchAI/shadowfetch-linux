@@ -1,0 +1,13 @@
+{
+  "id": "template-agent-workspace",
+  "name": "Agent Workspace",
+  "kind": "template",
+  "packages": [],
+  "url": "",
+  "sha256": "",
+  "size_bytes": 0,
+  "license": "",
+  "min_ram_gb": 5,
+  "requires": ["none"],
+  "blurb": "One click creates a private agent workspace: a folder with models, jobs and notes, plus a local model server that starts on demand and only ever listens on this machine (127.0.0.1). Pick a starter model from the catalog and the workspace is ready to do real work. No account, no cloud, nothing phones home."
+}

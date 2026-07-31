@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Shadowfetch Hermes
+GenericName=AI Agent
+Comment=Launch the local Hermes AI agent
+Exec=shadowfetch-hermes
+Icon=shadowfetch
+Terminal=false
+Categories=Utility;Development;Network;
+Keywords=AI;agent;hermes;assistant;

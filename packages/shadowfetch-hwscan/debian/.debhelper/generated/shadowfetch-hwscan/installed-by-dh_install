@@ -1,0 +1,2 @@
+./usr/libexec/shadowfetch-hwscan
+./usr/lib/systemd/system/shadowfetch-hwscan.service

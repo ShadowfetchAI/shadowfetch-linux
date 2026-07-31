@@ -1,0 +1,3 @@
+usr/bin/shadowfetch-workspace-create usr/bin
+usr/libexec/shadowfetch-llama-announce usr/libexec
+usr/lib/systemd/user/shadowfetch-llama@.service usr/lib/systemd/user

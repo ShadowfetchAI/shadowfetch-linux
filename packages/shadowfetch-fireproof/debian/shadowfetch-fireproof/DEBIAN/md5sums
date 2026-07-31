@@ -1,0 +1,16 @@
+1b4e327b0b5789818897f9a34bebb4df  usr/bin/fireproof
+0f0d7aee9754f636db3cfe1aac41b0f1  usr/bin/shadowfetch-fireproof
+e71a83d054e068134785c7eb0d6fead3  usr/lib/systemd/system/fireproof-postboot.service
+9d90bb35c47585ac7a0d01bb344bf696  usr/lib/systemd/system/fireproof-postboot.timer
+de0dfa51ae313c98f3787b851f1909cc  usr/lib/systemd/system/fireproofd.service
+6c5cf975279a0d02d3989093e8792acd  usr/libexec/fireproof-postboot
+351eb90cc31920384fb54bb7d948ce3c  usr/libexec/fireproof-session-check
+6bca66a0cba7f8e8fe2351d69d78e051  usr/libexec/fireproofd
+483e3ba191c3592c706dd074ef6b549d  usr/share/applications/shadowfetch-fireproof.desktop
+ee5c986645e38f3e5476bb8851fa1675  usr/share/dbus-1/system-services/org.shadowfetch.Fireproof1.service
+ee2d189a24632bfaa8a01a6559c4938c  usr/share/dbus-1/system.d/org.shadowfetch.Fireproof1.conf
+617c9474731087c21fc2213f5d0987ec  usr/share/doc/shadowfetch-fireproof/changelog.Debian.gz
+fc8c5b625cf8a3a3aa4551566689132e  usr/share/doc/shadowfetch-fireproof/copyright
+4d9aaf490d12a0ea440c44db73cc6fc2  usr/share/polkit-1/actions/org.shadowfetch.fireproof.policy
+536191d34b88fda3afe7b6e9efbad8d9  usr/share/shadowfetch/control-center/sfcc/fireproof_page.py
+634dd37e4f060509491a591ed7e6043a  usr/share/shadowfetch/fireproof/issue-recovery.template

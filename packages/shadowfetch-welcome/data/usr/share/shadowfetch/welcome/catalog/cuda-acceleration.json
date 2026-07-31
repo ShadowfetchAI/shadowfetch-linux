@@ -1,0 +1,13 @@
+{
+  "id": "cuda-acceleration",
+  "name": "CUDA Acceleration",
+  "kind": "apt",
+  "packages": ["libggml0-backend-cuda"],
+  "url": "",
+  "sha256": "",
+  "size_bytes": 0,
+  "license": "MIT (ggml CUDA backend, contrib) + NVIDIA proprietary (CUDA runtime libraries, non-free)",
+  "min_ram_gb": 0,
+  "requires": ["nvidia"],
+  "blurb": "For NVIDIA hardware with the driver installed: adds the CUDA backend for llama.cpp so local models offload to your GPU at full speed. Pulls the non-free NVIDIA CUDA runtime libraries (libcublas12, libcudart12) as dependencies from the pinned snapshot mirror - never part of the ISO, installed only when you click. The Vulkan backend already in the ISO remains the default GPU path. Download size is measured at ISO build time and shown before anything happens."
+}

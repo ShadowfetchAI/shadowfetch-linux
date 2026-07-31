@@ -1,0 +1,5 @@
+821ed7f526fba885c3f5b1f7f62061bb  usr/lib/systemd/system/shadowfetch-firewatchd.service
+924e89a5966f9c8a1482d11bff0c2dd7  usr/libexec/firewatchd
+339fd1006dc18a500af3c56d31709b72  usr/share/dbus-1/system.d/org.shadowfetch.Firewatch1.conf
+049da9edf677acdc25ec5d224557f68c  usr/share/doc/shadowfetch-firewatchd/changelog.Debian.gz
+349acb740080d3b2ba30bddbc50072fa  usr/share/doc/shadowfetch-firewatchd/copyright

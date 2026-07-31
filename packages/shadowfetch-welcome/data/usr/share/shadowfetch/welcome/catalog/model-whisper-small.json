@@ -1,0 +1,13 @@
+{
+  "id": "model-whisper-small",
+  "name": "Whisper small (ggml, for whisper.cpp)",
+  "kind": "model",
+  "packages": [],
+  "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin",
+  "sha256": "FILL-AT-RELEASE",
+  "size_bytes": 500000000,
+  "license": "MIT",
+  "min_ram_gb": 1,
+  "requires": ["none"],
+  "blurb": "Speech-to-text and transcription via Debian-main whisper.cpp - runs near real time CPU-only even on the 8 GB floor machine, and pairs with the shipped ffmpeg media utilities. 0.5 GB download, needs about 1 GB of RAM while running. Downloaded only when you click, resumable, and verified against its checksum before use."
+}

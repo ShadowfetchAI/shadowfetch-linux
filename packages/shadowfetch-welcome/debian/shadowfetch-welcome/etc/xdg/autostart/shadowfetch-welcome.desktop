@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Shadowfetch Welcome
+Comment=First-boot setup
+Exec=shadowfetch-welcome
+Icon=shadowfetch
+Terminal=false
+Categories=System;
+X-KDE-autostart-phase=2
+OnlyShowIn=KDE;

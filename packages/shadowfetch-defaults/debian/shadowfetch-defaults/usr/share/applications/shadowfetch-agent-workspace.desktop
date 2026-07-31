@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Agent Studio
+Comment=Create isolated, documented workspaces for local agents
+Exec=konsole -e bash -lc "shadowfetch-agent-workspace; exec bash"
+Icon=shadowfetch
+Terminal=false
+Categories=Development;Utility;
+Keywords=agent;workspace;Hermes;OpenClaw;AI;

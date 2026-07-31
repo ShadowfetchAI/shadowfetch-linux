@@ -1,0 +1,3 @@
+/etc/apt/apt.conf.d/85fireproof
+/etc/apt/listchanges.conf.d/shadowfetch-fireproof.conf
+/etc/xdg/autostart/shadowfetch-fireproof-check.desktop

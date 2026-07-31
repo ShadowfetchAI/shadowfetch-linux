@@ -1,0 +1,67 @@
+Source: shadowfetch-meta
+Section: metapackages
+Priority: optional
+Maintainer: Shadowfetch Project <signing@shadowfetch.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Homepage: https://shadowfetch.com/linux/
+
+Package: shadowfetch-desktop
+Architecture: all
+Depends:
+ ${misc:Depends},
+ shadowfetch-themes (= ${binary:Version}),
+ shadowfetch-defaults (= ${binary:Version}),
+ shadowfetch-branding (= ${binary:Version}),
+ shadowfetch-welcome (= ${binary:Version}),
+ shadowfetch-creative-base (= ${binary:Version}),
+ kde-plasma-desktop,
+ sddm,
+ pipewire,
+ pipewire-pulse,
+ wireplumber,
+ network-manager,
+ flatpak,
+ plasma-discover-backend-flatpak
+Description: Shadowfetch creative workstation (KDE Plasma edition)
+ Shadowfetch is a Debian-based Linux distribution for visual artists,
+ musicians, and video creators. This meta-package installs the full
+ Shadowfetch desktop experience, including the KDE Plasma session,
+ the creative-app baseline, themes, branding, and the welcome tool.
+
+Package: shadowfetch-creative-base
+Architecture: all
+Depends:
+ ${misc:Depends},
+ krita, inkscape,
+ audacity,
+ x42-plugins, calf-plugins,
+ kdenlive,
+ ffmpeg,
+ fonts-inter
+Recommends:
+ fonts-jetbrains-mono,
+ gimp
+Description: Shadowfetch creative app baseline
+ Installs the core set of creative applications Shadowfetch users
+ expect: 2D, 3D, photo, audio, and video tools. Packages not currently
+ available in Debian testing under their expected names (blender, lmms,
+ carla, fonts-jetbrains-mono) are listed as Recommends so install
+ doesn't fail — Flatpak fallbacks are offered in the welcome wizard.
+
+Package: shadowfetch-nvidia
+Architecture: all
+Depends:
+ ${misc:Depends},
+ nvidia-driver,
+ nvidia-settings,
+ nvidia-vaapi-driver,
+ libnvidia-encode1,
+ firmware-nvidia-gsp
+Recommends:
+ nvidia-cuda-toolkit,
+ nvidia-prime
+Description: Shadowfetch NVIDIA driver bundle
+ Pulls in the proprietary NVIDIA stack used by Shadowfetch by default.
+ A first-boot hook removes this stack if no NVIDIA GPU is detected, so
+ it is safe to install on non-NVIDIA hardware.

@@ -1,0 +1,2 @@
+/etc/default/grub-btrfs/config
+/etc/grub.d/41_snapshots-btrfs

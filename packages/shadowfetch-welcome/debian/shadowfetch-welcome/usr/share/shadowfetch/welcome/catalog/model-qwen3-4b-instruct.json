@@ -1,0 +1,13 @@
+{
+  "id": "model-qwen3-4b-instruct",
+  "name": "Qwen3-4B-Instruct (Q4_K_M GGUF)",
+  "kind": "model",
+  "packages": [],
+  "url": "https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507-GGUF/resolve/main/Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+  "sha256": "FILL-AT-RELEASE",
+  "size_bytes": 2500000000,
+  "license": "Apache-2.0",
+  "min_ram_gb": 5,
+  "requires": ["none"],
+  "blurb": "The default: real chat and agent speed CPU-only on 8 GB of RAM. Solid instruction following and tool-call formatting, comfortable with 4-8K context. Expect roughly 6-12 tokens/s on a modern 8-core CPU. 2.5 GB download, needs about 5 GB of RAM while running. Downloaded only when you click, resumable, and verified against its checksum before use."
+}

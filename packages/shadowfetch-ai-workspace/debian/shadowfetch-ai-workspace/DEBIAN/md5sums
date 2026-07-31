@@ -1,0 +1,4 @@
+4838478b24d1a6190ac994bbe332c7f0  usr/bin/shadowfetch-workspace-create
+9480e120a2ba6132ab46b9f33da7e5a9  usr/lib/systemd/user/shadowfetch-llama@.service
+bbc338d7dd0746b9c9716948ff9128d2  usr/libexec/shadowfetch-llama-announce
+97a9a10a5b74c2005f7944d7ad48ef97  usr/share/doc/shadowfetch-ai-workspace/changelog.Debian.gz

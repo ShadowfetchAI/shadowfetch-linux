@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Shadowfetch OpenClaw
+GenericName=AI Agent
+Comment=Install or launch the OpenClaw personal AI agent
+Exec=shadowfetch-openclaw
+Icon=shadowfetch
+Terminal=false
+Categories=Utility;Development;Network;
+Keywords=AI;agent;OpenClaw;assistant;Ollama;

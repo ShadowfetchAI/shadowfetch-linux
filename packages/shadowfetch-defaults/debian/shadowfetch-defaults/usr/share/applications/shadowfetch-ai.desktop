@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Private AI - Setup
+GenericName=Local AI (Ollama + Open-WebUI)
+Comment=Set up private, local AI that runs on your machine - no cloud
+Exec=konsole --hold -e shadowfetch-ai setup
+Icon=shadowfetch
+Terminal=false
+Type=Application
+Categories=Utility;System;
+Keywords=AI;LLM;Ollama;OpenWebUI;local;chat;private;

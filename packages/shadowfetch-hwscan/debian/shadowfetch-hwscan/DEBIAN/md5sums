@@ -1,0 +1,4 @@
+4f6e921f6109ee85090d3f838408f3ff  usr/lib/systemd/system/shadowfetch-hwscan.service
+be8f6bb8a1a42e2af67b963d4cc9a5db  usr/libexec/shadowfetch-hwscan
+0c1fc294baa724cea76c7727eeb824d5  usr/share/doc/shadowfetch-hwscan/changelog.Debian.gz
+e9c91cc2b209daa6f06bee3c06329f36  usr/share/doc/shadowfetch-hwscan/copyright

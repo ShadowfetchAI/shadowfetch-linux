@@ -1,0 +1,137 @@
+#!/bin/bash
+# Shadowfetch one-click GPU driver helper.
+# AMD/Intel: open Mesa drivers are already active (nothing to do).
+# NVIDIA: detect the card, pick the right branch, enable repos, build the module
+# against the running kernel, handle Secure Boot (MOK), and advise X11 on the 550 driver.
+set -u
+
+# ---- --help / --version, BEFORE any side effect -----------------------------
+# This block is deliberately the first thing that runs. Until 2026-07-26 this
+# tool had no argument handling at all, so `--help` fell through to the body and
+# began installing driver packages with apt. Someone asking a command what it does
+# should never thereby cause it to do the thing.
+case "${1:-}" in
+  -h|--help)
+    cat <<'SFHELP'
+shadowfetch-gpu - One-click GPU driver helper.
+
+USAGE
+  shadowfetch-gpu          detect the GPU and set up the right driver
+
+WHAT IT DOES
+  AMD and Intel need nothing: Mesa is already active. On NVIDIA this
+  INSTALLS PACKAGES with apt and builds a kernel module, which needs sudo
+  and a reboot.
+
+Part of Shadowfetch Linux. https://shadowfetch.com/linux/
+SFHELP
+    exit 0 ;;
+  --version)
+    echo "shadowfetch-gpu (Shadowfetch Linux) $(cat /usr/share/shadowfetch/version 2>/dev/null || echo unknown)"; exit 0 ;;
+esac
+G='\033[1;33m'; R='\033[1;31m'; C='\033[1;36m'; D='\033[2m'; Z='\033[0m'
+say(){ printf "${G}==>${Z} %s\n" "$*"; }; err(){ printf "${R}!!${Z} %s\n" "$*"; }; ok(){ printf "${C}--${Z} %s\n" "$*"; }
+
+# ---------- privileged apply branch (re-exec'd via sudo) ----------
+if [ "${1:-}" = "--apply" ]; then
+    MODE="${2:-proprietary}"; OPTIMUS="${3:-0}"
+    say "Enabling repository components (contrib non-free non-free-firmware)…"
+    for f in /etc/apt/sources.list.d/*.sources; do
+        [ -f "$f" ] && sed -i -E 's/^(Components:).*/\1 main contrib non-free non-free-firmware/' "$f"
+    done
+    [ -f /etc/apt/sources.list ] && sed -i -E '/^deb .*debian/{/non-free-firmware/!s/[[:space:]]*$/ contrib non-free non-free-firmware/}' /etc/apt/sources.list
+    apt-get update || { err "apt update failed"; exit 1; }
+    H="linux-headers-$(uname -r)"
+    case "$MODE" in
+      open)        PKGS="$H nvidia-open-kernel-dkms nvidia-driver nvidia-settings firmware-nvidia-graphics";;
+      legacy)      PKGS="$H nvidia-legacy-390xx-driver nvidia-settings firmware-misc-nonfree";;
+      *)           PKGS="$H nvidia-kernel-dkms nvidia-driver nvidia-settings firmware-nvidia-graphics";;
+    esac
+    say "Installing: $PKGS"
+    DEBIAN_FRONTEND=noninteractive apt-get install -y $PKGS || { err "driver install failed — see apt output above"; exit 1; }
+    # KMS/Wayland (kernel >=6.11 needs fbdev=1)
+    printf "options nvidia-drm modeset=1\noptions nvidia-drm fbdev=1\n" > /etc/modprobe.d/shadowfetch-nvidia-kms.conf
+    # suspend-preserve only on desktops (breaks suspend on hybrid/Optimus laptops)
+    if [ "$OPTIMUS" = 0 ]; then
+        echo "options nvidia NVreg_PreserveVideoMemoryAllocations=1" > /etc/modprobe.d/shadowfetch-nvidia-suspend.conf
+        systemctl enable nvidia-suspend.service nvidia-resume.service nvidia-hibernate.service 2>/dev/null || true
+    else
+        rm -f /etc/modprobe.d/shadowfetch-nvidia-suspend.conf 2>/dev/null
+    fi
+    update-initramfs -u || true
+    if command -v mokutil >/dev/null 2>&1 && mokutil --sb-state 2>/dev/null | grep -qi enabled; then
+        if [ -f /var/lib/dkms/mok.pub ]; then
+            echo; say "Secure Boot is ENABLED — you must enroll the module-signing key once."
+            echo "   Set a temporary password now. On the next reboot a blue 'MOK Manager' screen appears:"
+            echo "   choose  Enroll MOK -> Continue -> Yes -> (enter this password).  Then NVIDIA will load."
+            mokutil --import /var/lib/dkms/mok.pub || true
+        fi
+    fi
+    exit 0
+fi
+
+# ---------- unprivileged detect + confirm ----------
+echo; say "Shadowfetch GPU driver setup"; echo
+GPUS=$(lspci -nn 2>/dev/null | grep -Ei "VGA|3D|Display")
+[ -n "$GPUS" ] && echo "$GPUS" | sed "s/^/   /"; echo
+NV=$(echo "$GPUS" | grep -ci NVIDIA)
+AMD=$(echo "$GPUS" | grep -Eci "AMD|ATI|Radeon")
+INTEL=$(echo "$GPUS" | grep -ci Intel)
+OPTIMUS=0; [ "$NV" -ge 1 ] && { [ "$AMD" -ge 1 ] || [ "$INTEL" -ge 1 ]; } && OPTIMUS=1
+
+if [ "$NV" -eq 0 ]; then
+    if [ "$AMD" -ge 1 ] || [ "$INTEL" -ge 1 ]; then
+        ok "AMD/Intel graphics detected — the open-source Mesa drivers are already installed and active."
+        echo "   OpenGL, Vulkan and VA-API hardware video acceleration all work out of the box. Nothing to install."
+        echo; echo "   Self-check:  vulkaninfo | head    vainfo    glxinfo | grep -i renderer"
+    else
+        ok "No NVIDIA card detected. Your current open-source graphics driver is active and needs no setup."
+    fi
+    echo; exit 0
+fi
+
+say "NVIDIA GPU detected — checking the recommended driver…"
+DET=""; REC=""
+if command -v nvidia-detect >/dev/null 2>&1; then
+    DET=$(nvidia-detect 2>/dev/null); echo "$DET" | grep -iE "recommend|nvidia-|legacy|nouveau" | sed "s/^/   /"
+fi
+MODE="proprietary"
+if echo "$DET" | grep -qi "legacy-390xx"; then MODE="legacy"
+elif echo "$DET" | grep -qiE "not supported by any driver|newer driver may add|Uh oh"; then
+    err "Your NVIDIA card is newer than any driver Debian ships (nvidia-detect found no match up to the 550 series)."
+    echo "   Debian has no driver new enough for this GPU yet - not even in backports."
+    echo "   Keep the open-source nouveau driver (active now), or install a newer one from"
+    echo "   trixie-backports (when one lands) or NVIDIA's own .run installer. We will NOT install"
+    echo "   the stable driver - it cannot drive your card and would only break your display."
+    echo; exit 0
+elif echo "$DET" | grep -qiE "no longer|unsupported|legacy-(340xx|470xx)"; then
+    err "This card needs an NVIDIA legacy branch Debian trixie no longer ships."
+    echo "   The open-source 'nouveau' driver is active and is the safest choice here — you can keep it."
+    read -rp "   Attempt the 390xx legacy branch anyway? [y/N] " a; [ "${a:-}" = y ] || { echo; exit 0; }
+    MODE="legacy"
+elif echo "$DET" | grep -qiE "RTX|GTX 16|Turing|Ampere|Ada|open"; then MODE="open"; fi
+
+echo; say "Plan"
+case "$MODE" in
+  open)   echo "   • nvidia-open-kernel-dkms + nvidia-driver  (open GSP modules, Turing+)";;
+  legacy) echo "   • nvidia-legacy-390xx-driver  (legacy branch for older cards)";;
+  *)      echo "   • nvidia-kernel-dkms + nvidia-driver  (proprietary modules)";;
+esac
+[ "$OPTIMUS" = 1 ] && echo "   • Hybrid graphics (iGPU + dGPU) — suspend-preserve will be left OFF (safer on hybrid setups)."
+echo "   • Build against the running kernel: $(uname -r)"
+echo "   • Debian ships NVIDIA 550 → for the smoothest desktop, log in with the Plasma (X11)"
+echo "     session at the login screen (Wayland works but can flicker until driver 555+)."
+echo
+read -rp "Proceed? Needs sudo, downloads ~300 MB. [y/N] " go
+[ "${go:-}" = y ] || { echo "Cancelled — no changes made."; exit 0; }
+
+sudo bash "$0" --apply "$MODE" "$OPTIMUS"
+rc=$?
+echo
+if [ $rc -eq 0 ]; then
+    ok "Done. Reboot to load the NVIDIA driver."
+    echo "   At the login screen, click your name → session selector (bottom-left) → 'Plasma (X11)'."
+    read -rp "Reboot now? [y/N] " rb; [ "${rb:-}" = y ] && systemctl reboot
+else
+    err "Driver setup did not complete. Your previous driver is untouched; review the output above."
+fi

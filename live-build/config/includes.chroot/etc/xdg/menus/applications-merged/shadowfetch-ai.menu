@@ -1,0 +1,35 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+ "http://www.freedesktop.org/standards/menu-spec/menu-1.0.dtd">
+<!--
+  Groups Shadowfetch's on-device AI tools under one "Local AI" heading.
+
+  Seven AI applications ship and every one is visible, but they were spread
+  across Utility, System, Network and Development with nothing tying them
+  together. Multiple public reviewers browsed the application menu, found no AI
+  section, and concluded on camera that the distro's headline feature was
+  absent. One told his audience the project had "jumped on the bandwagon
+  because AI is trendy". The feature was there; the shelf was not.
+
+  Matched by explicit Filename rather than by Category, so that an unrelated
+  third-party application can never fall into this menu.
+
+  (No double-hyphen anywhere in this comment: XML forbids it inside comments,
+  and an earlier revision of this file was malformed for exactly that reason.)
+-->
+<Menu>
+  <Name>Applications</Name>
+  <Menu>
+    <Name>Shadowfetch Local AI</Name>
+    <Directory>shadowfetch-ai.directory</Directory>
+    <Include>
+      <Filename>shadowfetch-agents.desktop</Filename>
+      <Filename>shadowfetch-ai.desktop</Filename>
+      <Filename>shadowfetch-ai-webui.desktop</Filename>
+      <Filename>shadowfetch-llm.desktop</Filename>
+      <Filename>shadowfetch-hermes.desktop</Filename>
+      <Filename>shadowfetch-openclaw.desktop</Filename>
+      <Filename>shadowfetch-agent-workspace.desktop</Filename>
+      <Filename>shadowfetch-agent-guide.desktop</Filename>
+    </Include>
+  </Menu>
+</Menu>

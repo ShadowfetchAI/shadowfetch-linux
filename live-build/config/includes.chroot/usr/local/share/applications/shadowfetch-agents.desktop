@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Agents
+GenericName=Local AI workspaces
+Comment=Your local models and agent workspaces - private, on this machine only
+Exec=shadowfetch-control-center --page agents
+TryExec=shadowfetch-control-center
+Icon=shadowfetch
+Terminal=false
+# Shadowfetch launcher cleanup: re-filed under AI and Agents
+# (X-Shadowfetch-AI), replacing the stock System;Utility; entry.
+Categories=X-Shadowfetch-AI;
+StartupNotify=true
+Keywords=AI;agent;model;workspace;llama;local;tokens;

@@ -1,0 +1,92 @@
+#!/bin/bash
+# Shadowfetch hook: 0020-gpu-firstboot
+# Installs a first-boot service that detects the GPU and, if NVIDIA is
+# present, installs the proprietary driver stack on the running system.
+# (The nvidia DKMS build only succeeds against the real installed kernel,
+# not against the chroot's kernel headers at ISO-build time, so we defer
+# it to first boot. AMD/Intel hardware needs nothing — Mesa is shipped.)
+
+set -e
+
+echo "[shadowfetch] Installing first-boot GPU service..."
+
+cat > /usr/local/sbin/shadowfetch-gpu-detect <<'SCRIPT'
+#!/bin/bash
+# Runs once on first boot. Detects GPU and installs NVIDIA driver if needed.
+
+LOG=/var/log/shadowfetch-gpu-detect.log
+exec >>"$LOG" 2>&1
+
+echo "=== shadowfetch-gpu-detect $(date) ==="
+
+GPU_INFO=$(lspci 2>/dev/null | grep -iE 'vga|3d|display' || true)
+echo "Detected GPU(s):"
+echo "$GPU_INFO"
+
+HAS_NVIDIA=false
+HAS_AMD=false
+HAS_INTEL=false
+
+echo "$GPU_INFO" | grep -qi nvidia && HAS_NVIDIA=true
+echo "$GPU_INFO" | grep -qiE 'amd|ati|radeon' && HAS_AMD=true
+echo "$GPU_INFO" | grep -qi intel && HAS_INTEL=true
+
+if $HAS_NVIDIA; then
+    echo "NVIDIA detected. Installing proprietary driver stack..."
+    # Update apt with our archives + Debian's already configured
+    apt-get update || true
+    # Install via the shadowfetch-nvidia metapackage (pulls nvidia-driver,
+    # firmware-nvidia-gsp, libnvidia-encode1, nvidia-vaapi-driver)
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        --no-install-recommends \
+        shadowfetch-nvidia || \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        nvidia-driver firmware-nvidia-gsp || \
+        echo "NVIDIA install failed; user may need to install manually with: sudo apt install shadowfetch-nvidia"
+
+    # For mixed-GPU laptops, set PRIME to on-demand
+    if $HAS_INTEL || $HAS_AMD; then
+        echo "Hybrid GPU setup. Configuring PRIME on-demand."
+        DEBIAN_FRONTEND=noninteractive apt-get install -y nvidia-prime || true
+        prime-select on-demand || true
+    fi
+else
+    echo "No NVIDIA GPU detected. Mesa is already shipped — nothing to install."
+fi
+
+systemctl disable shadowfetch-gpu-detect.service
+echo "=== done ==="
+SCRIPT
+
+chmod +x /usr/local/sbin/shadowfetch-gpu-detect
+
+cat > /etc/systemd/system/shadowfetch-gpu-detect.service <<'EOF'
+[Unit]
+Description=Shadowfetch installed-system GPU detection and driver install
+Documentation=https://shadowfetch.com/linux/
+# This service is copied into the installed system from the live image. Do not
+# run it in the live session itself: installing DKMS/NVIDIA from a mutable live
+# boot can rebuild initramfs/kernel state against the wrong environment and has
+# been observed to leave the next boot in a kernel-panic loop.
+ConditionPathExists=!/run/live/medium
+ConditionPathExists=!/run/live/rootfs
+ConditionPathExists=!/var/lib/shadowfetch/gpu-detect-done
+Wants=network-online.target
+After=network-online.target apt-daily.service apt-daily-upgrade.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/shadowfetch-gpu-detect
+ExecStartPost=/bin/sh -c 'mkdir -p /var/lib/shadowfetch && touch /var/lib/shadowfetch/gpu-detect-done'
+# Keep first boot from being held hostage by a slow mirror or a DKMS stall.
+TimeoutStartSec=300
+Nice=10
+IOSchedulingClass=idle
+
+[Install]
+WantedBy=graphical.target
+EOF
+
+systemctl enable shadowfetch-gpu-detect.service
+
+echo "[shadowfetch] GPU first-boot service installed."

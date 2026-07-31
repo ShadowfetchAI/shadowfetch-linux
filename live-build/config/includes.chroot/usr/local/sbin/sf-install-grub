@@ -1,0 +1,83 @@
+#!/bin/sh
+# Shadowfetch universal bootloader installer (runs in the target chroot via the
+# Calamares "shellprocess@grub" module). Installs GRUB for the booted firmware,
+# and best-effort for the other, so the disk is bootable on UEFI *and* legacy BIOS.
+#
+# Two Calamares quirks handled here:
+#  1. The installer chroot has NO udev database, so `lsblk PARTLABEL` returns
+#     empty -- we find the bios_grub partition via `sfdisk -d` (reads the GPT
+#     directly), with a blkid fallback.
+#  2. Calamares does not honour the partitionLayout `type:` GUID, so the
+#     bios_grub partition is mis-typed "Linux filesystem"; we set the BIOS Boot
+#     Partition type (21686148-...) ourselves before grub-install i386-pc.
+export PATH=/usr/sbin:/sbin:/usr/bin:/bin
+exec >/var/log/sf-install-grub.log 2>&1
+set -x
+RC=0
+# Derive the physical disk from the ESP, not from /.
+#
+# The old line was:
+#     DISK=$(grub-probe --target=device / | sed -E 's/p?[0-9]+$//')
+#
+# On an encrypted root grub-probe returns /dev/mapper/luks-<uuid>, and that sed
+# strips the UUID's trailing hex digits -- yielding a device that does not exist.
+# Both grub-install calls then failed and the install produced an unbootable disk.
+# The ESP is always a real partition on the real disk, encrypted or not, so ask
+# lsblk for its parent. Falls back to the original derivation if that comes back
+# empty, so unencrypted installs cannot regress.
+DISK=""
+ESP_SRC=$(findmnt -no SOURCE /boot/efi 2>/dev/null)
+[ -z "$ESP_SRC" ] && ESP_SRC=$(findmnt -no SOURCE /boot 2>/dev/null)
+if [ -n "$ESP_SRC" ]; then
+  PK=$(lsblk -no pkname "$ESP_SRC" 2>/dev/null | head -1 | tr -d " ")
+  [ -n "$PK" ] && [ -b "/dev/$PK" ] && DISK="/dev/$PK"
+fi
+if [ -z "$DISK" ]; then
+  DISK=$(grub-probe --target=device / | sed -E 's/p?[0-9]+$//')
+  echo "WARN: ESP-derived disk empty, fell back to grub-probe: DISK=$DISK"
+fi
+echo "DISK=$DISK firmware=$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)"
+
+# Locate bios_grub partition (udev-independent).
+PART=$(sfdisk -d "$DISK" 2>/dev/null | grep 'name="bios_grub"' | head -1 | cut -d: -f1 | tr -d ' ')
+if [ -z "$PART" ]; then
+  for p in $(lsblk -lno NAME "$DISK" 2>/dev/null | tail -n +2); do
+    [ "$(blkid -o value -s PARTLABEL "/dev/$p" 2>/dev/null)" = "bios_grub" ] && PART="/dev/$p" && break
+  done
+fi
+echo "bios_grub PART=$PART"
+if [ -n "$PART" ]; then
+  PNUM=$(echo "$PART" | grep -oE '[0-9]+$')
+  sfdisk --part-type "$DISK" "$PNUM" 21686148-6449-6E6F-744E-656564454649 || true
+  partx -u "$DISK" 2>/dev/null || true
+  udevadm settle 2>/dev/null || true
+fi
+
+# BIOS GRUB (i386-pc): critical when booted BIOS, bonus when booted UEFI.
+if [ -d /sys/firmware/efi ]; then
+  grub-install --target=i386-pc --recheck "$DISK" || echo "note: i386-pc bonus install failed"
+else
+  grub-install --target=i386-pc --recheck "$DISK" || RC=1
+fi
+
+# EFI GRUB (x86_64-efi): when booted UEFI.
+if [ -d /sys/firmware/efi ]; then
+  grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable --no-nvram --recheck || RC=1
+fi
+
+# Normalize the /boot/efi fstab entry. Calamares dual-ESP (its prepended ESP + our
+# partitionLayout ESP) can leave a DUPLICATE and/or MALFORMED /boot/efi line (e.g. a bare
+# UUID value or a lone token), which makes systemd-fstab-generator fail -> degraded boot.
+# Strip every /boot/efi line and any malformed (<4 field) lines, then write exactly one
+# correct entry for the ESP grub installed to (the one currently mounted at /boot/efi).
+EFI_UUID=$(findmnt -no UUID /boot/efi 2>/dev/null | head -n1 | tr -d "[:space:]")
+if [ -n "$EFI_UUID" ]; then
+  awk 'NF>=4 && $2!="/boot/efi"' /etc/fstab > /etc/fstab.sf
+  printf "UUID=%s\t/boot/efi\tvfat\tumask=0077,shortname=winnt\t0\t2\n" "$EFI_UUID" >> /etc/fstab.sf
+  mv /etc/fstab.sf /etc/fstab
+  echo "sf-install-grub: normalized /boot/efi fstab -> UUID=$EFI_UUID"
+fi
+
+update-grub || RC=1
+echo "sf-install-grub RC=$RC"
+exit $RC

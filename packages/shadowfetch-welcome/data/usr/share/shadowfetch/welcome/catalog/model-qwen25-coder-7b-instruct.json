@@ -1,0 +1,13 @@
+{
+  "id": "model-qwen25-coder-7b-instruct",
+  "name": "Qwen2.5-Coder-7B-Instruct (Q4_K_M GGUF)",
+  "kind": "model",
+  "packages": [],
+  "url": "https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct-GGUF/resolve/main/qwen2.5-coder-7b-instruct-q4_k_m.gguf",
+  "sha256": "FILL-AT-RELEASE",
+  "size_bytes": 4700000000,
+  "license": "Apache-2.0",
+  "min_ram_gb": 7.5,
+  "requires": ["none"],
+  "blurb": "Code generation, completion and repair for the compiling-and-agents use case. Works CPU-only but slowly (3-6 tokens/s) - it shines with the Vulkan or CUDA GPU path; GPU or 16 GB RAM recommended. 4.7 GB download, needs about 7.5 GB of RAM while running. Downloaded only when you click, resumable, and verified against its checksum before use."
+}

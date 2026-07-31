@@ -1,0 +1,17 @@
+./data/usr/bin/shadowfetch-control
+./data/usr/bin/shadowfetch-ember-session
+./data/etc/xdg/autostart/shadowfetch-ember-session.desktop
+./data/usr/share/shadowfetch/control-center/sfcc/__init__.py
+./data/usr/share/shadowfetch/control-center/sfcc/app.py
+./data/usr/share/shadowfetch/control-center/sfcc/busutil.py
+./data/usr/share/shadowfetch/control-center/sfcc/theme.py
+./data/usr/share/shadowfetch/control-center/sfcc/ember_page.py
+./data/usr/share/shadowfetch/control-center/sfcc/firewatch_page.py
+./data/usr/share/shadowfetch/control-center/sfcc/phoenix_page.py
+./data/usr/share/shadowfetch/control-center/sfcc/agents_page.py
+./data/usr/share/shadowfetch/control-center/sfcc/drivers_page.py
+./data/usr/share/shadowfetch/control-center/sfcc/software_page.py
+./data/usr/share/shadowfetch/ember/profiles/gaming.conf
+./data/usr/share/shadowfetch/ember/profiles/local-ai.conf
+./data/usr/share/applications/shadowfetch-control.desktop
+./data/usr/share/applications/firewatch.desktop

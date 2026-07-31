@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Shadowfetch Control Center
+GenericName=System control center
+Comment=Ignite, Watch, Recover - plus Agents, Drivers, and Software & Updates
+Exec=shadowfetch-control-center
+TryExec=shadowfetch-control-center
+Icon=shadowfetch
+Terminal=false
+Categories=System;Settings;
+StartupNotify=true
+Keywords=ember;firewatch;phoenix;update;rollback;snapshot;agents;drivers;control;

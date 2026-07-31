@@ -1,0 +1,13 @@
+1505742c40789c12a202731be444e6e4  usr/lib/systemd/system/phoenix-firstboot.service
+9908cf35be581e7115cde7cdbc84c2b5  usr/lib/systemd/system/phoenix-postboot.service
+a75f68d5c30fdcbbb66777d114beb386  usr/libexec/phoenix-desktop-reset
+e039df21ac972868ce87244e7bdfc6b6  usr/libexec/phoenix-firstboot
+2e301961b1d57a9c52cb57615d823d36  usr/libexec/phoenix-overlay-banner
+2a5f89f495da7be0c5f412bef8005529  usr/libexec/phoenix-postboot
+44af24d5cabad73f8a32c9823e454d6c  usr/libexec/phoenix-recovery-report
+64615bd8ba3bcab6d0735ed7ee941033  usr/libexec/phoenix-restore
+612b59ec9137865be1c6e2465d84380c  usr/libexec/phoenix-space-check
+24e2482d76fc55dbb2cbddc8edd63523  usr/share/applications/shadowfetch-phoenix.desktop
+2fe7e263985d6a1b2aa4f0770b7319a7  usr/share/doc/shadowfetch-phoenix/changelog.Debian.gz
+ca5a5d29eaa2b58559736856b8c06648  usr/share/doc/shadowfetch-phoenix/copyright
+4ce89450ea900dfedcea1740b8182b14  usr/share/polkit-1/actions/org.shadowfetch.phoenix.policy

@@ -1,0 +1,145 @@
+#!/bin/bash
+
+# ---- --help / --version, BEFORE any side effect -----------------------------
+# This block is deliberately the first thing that runs. Until 2026-07-26 this
+# tool had no argument handling at all, so `--help` fell through to the body and
+# began downloading and running the Ollama installer. Someone asking a command what it does
+# should never thereby cause it to do the thing.
+case "${1:-}" in
+  -h|--help)
+    cat <<'SFHELP'
+shadowfetch-ai - Private, local AI: Ollama runtime plus Open-WebUI chat.
+
+USAGE
+  shadowfetch-ai setup     install and harden Ollama + Open-WebUI
+  shadowfetch-ai webui     open the local chat UI
+  shadowfetch-ai status    show what is running
+  shadowfetch-ai stop      stop the local services
+
+WHAT IT DOES
+  `setup` DOWNLOADS AND RUNS the official Ollama installer over the network
+  and starts a local service. Nothing leaves the machine once installed.
+
+Part of Shadowfetch Linux. https://shadowfetch.com/linux/
+SFHELP
+    exit 0 ;;
+  --version)
+    echo "shadowfetch-ai (Shadowfetch Linux) $(cat /usr/share/shadowfetch/version 2>/dev/null || echo unknown)"; exit 0 ;;
+esac
+# shadowfetch-ai - private, local AI for Shadowfetch Linux.
+# Ollama (LLM runtime) + Open-WebUI (ChatGPT-style web chat), 100% local & hardened.
+# Usage: shadowfetch-ai {setup|webui|status|stop}
+WEBUI_PORT=8080
+WEBUI_NAME=shadowfetch-webui
+WEBUI_IMAGE=ghcr.io/open-webui/open-webui:main
+
+say()  { printf '\033[1;33m%s\033[0m\n' "$*"; }
+info() { printf '  %s\n' "$*"; }
+
+ensure_ollama() {
+    command -v ollama >/dev/null 2>&1 && return 0
+    say "Installing Ollama (local LLM runtime)..."
+    (
+        flock -w 600 9 2>/dev/null || { echo "Could not acquire install lock."; exit 1; }
+        command -v ollama >/dev/null 2>&1 && exit 0
+        curl -fsSL https://ollama.com/install.sh | sh
+    ) 9>/tmp/shadowfetch-ollama-install.lock
+    command -v ollama >/dev/null 2>&1
+}
+
+harden_ollama() {
+    sudo mkdir -p /etc/systemd/system/ollama.service.d
+    printf '[Service]\nEnvironment="OLLAMA_HOST=127.0.0.1:11434"\n' | sudo tee /etc/systemd/system/ollama.service.d/10-localhost.conf >/dev/null
+    sudo systemctl daemon-reload 2>/dev/null || true
+    sudo systemctl restart ollama 2>/dev/null || true
+    command -v ufw >/dev/null 2>&1 && sudo ufw deny 11434/tcp >/dev/null 2>&1 || true
+}
+
+start_webui() {
+    if sudo podman ps --format '{{.Names}}' 2>/dev/null | grep -qx "$WEBUI_NAME"; then
+        info "Open-WebUI already running."
+    elif sudo podman ps -a --format '{{.Names}}' 2>/dev/null | grep -qx "$WEBUI_NAME"; then
+        sudo podman start "$WEBUI_NAME" >/dev/null && info "Open-WebUI started."
+    else
+        say "Starting Open-WebUI (downloads ~1 GB the first time)..."
+        sudo podman run -d --name "$WEBUI_NAME" --network=host \
+            -e HOST=127.0.0.1 -e PORT=${WEBUI_PORT} \
+            -e OLLAMA_BASE_URL=http://127.0.0.1:11434 \
+            -e WEBUI_AUTH=True \
+            -v shadowfetch-webui:/app/backend/data \
+            --restart=always \
+            "$WEBUI_IMAGE" || { echo "Failed to start Open-WebUI."; return 1; }
+        sudo systemctl enable podman-restart.service 2>/dev/null || true
+    fi
+    command -v ufw >/dev/null 2>&1 && sudo ufw deny ${WEBUI_PORT}/tcp >/dev/null 2>&1 || true
+}
+
+recommended_model() {
+    local memory_kib
+    memory_kib=$(awk '/MemTotal:/ {print $2}' /proc/meminfo 2>/dev/null || echo 0)
+    if (( memory_kib > 0 && memory_kib < 8000000 )); then
+        printf '%s\n' 'llama3.2:3b'
+    else
+        printf '%s\n' 'gemma3:4b'
+    fi
+}
+
+cmd_setup() {
+    local model w
+    cat <<'BANNER'
+============================================
+  Shadowfetch Private AI
+  100% local - no cloud, no account, no telemetry.
+============================================
+BANNER
+    ensure_ollama || { echo "Ollama install failed."; exit 1; }
+    harden_ollama
+    if command -v nvidia-smi >/dev/null 2>&1; then info "NVIDIA GPU detected - Ollama will use it."; else info "Running on CPU (add the NVIDIA driver for GPU speed)."; fi
+    say "Ollama is bound to 127.0.0.1 and firewall-blocked (private by default)."
+    model=${SHADOWFETCH_AI_MODEL:-$(recommended_model)}
+    say "Recommended model for this computer: $model"
+    info "One model is installed to keep setup simple and conserve storage."
+    info "Advanced model choices remain available later with: shadowfetch-llm"
+    ollama pull "$model" || info "$model pull failed - retry later: ollama pull $model"
+    printf "Set up the local web chat now? [Y/n] "
+    read -r w
+    case "$w" in
+        n|N) info "Skipped. Terminal chat: ollama run $model" ;;
+        *) if command -v podman >/dev/null 2>&1; then start_webui && { say "Web chat ready -> http://localhost:${WEBUI_PORT}"; (xdg-open "http://localhost:${WEBUI_PORT}" >/dev/null 2>&1 &); }; else echo "podman not found."; fi ;;
+    esac
+    say "Done - your private AI is ready."
+}
+
+cmd_webui() {
+    command -v ollama >/dev/null 2>&1 || { echo "Run 'shadowfetch-ai setup' first."; exit 1; }
+    command -v podman  >/dev/null 2>&1 || { echo "podman is required for the web chat."; exit 1; }
+    start_webui || exit 1
+    say "Opening http://localhost:${WEBUI_PORT}"
+    (xdg-open "http://localhost:${WEBUI_PORT}" >/dev/null 2>&1 &)
+}
+
+cmd_status() {
+    if command -v ollama >/dev/null 2>&1; then info "Ollama: installed"; else info "Ollama: not installed"; fi
+    if sudo podman ps --format '{{.Names}}' 2>/dev/null | grep -qx "$WEBUI_NAME"; then
+        info "Open-WebUI: running (http://localhost:${WEBUI_PORT})"
+    else
+        info "Open-WebUI: stopped"
+    fi
+    command -v ollama >/dev/null 2>&1 && { echo "  Models:"; ollama list 2>/dev/null | sed 's/^/    /'; }
+}
+
+cmd_stop() {
+    if sudo podman stop "$WEBUI_NAME" >/dev/null 2>&1; then
+        info "Open-WebUI stopped."
+    else
+        info "Open-WebUI not running."
+    fi
+}
+
+case "${1:-setup}" in
+    setup) cmd_setup ;;
+    webui) cmd_webui ;;
+    status) cmd_status ;;
+    stop)  cmd_stop ;;
+    *) echo "Usage: shadowfetch-ai {setup|webui|status|stop}" ;;
+esac

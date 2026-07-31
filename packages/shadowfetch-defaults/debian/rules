@@ -1,0 +1,23 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+# Keep AGENTS.md uncompressed.
+#
+# dh_compress gzips files under /usr/share/doc that exceed its size threshold.
+# That silently broke usr/share/applications/shadowfetch-agent-guide.desktop,
+# which execs the uncompressed path:
+#     Exec=xdg-open /usr/share/doc/shadowfetch/AGENTS.md
+# while dpkg shipped only AGENTS.md.gz. So the "AI Agent Setup Guide" entry --
+# the first item in the Sistema menu, and the intended way in to the local-AI
+# feature -- did nothing at all when clicked.
+#
+# This was expensive. Multiple public reviewers concluded on camera that
+# Shadowfetch ships no AI tooling; one told 178 viewers it had "jumped on the
+# bandwagon because AI is trendy". The tooling ships. It was simply unreachable
+# from the single menu entry meant to introduce it.
+#
+# LICENSES.md (1.2K) and SOURCES.md (1.3K) fall under the threshold and were
+# never compressed, which is why exactly one file broke and nobody noticed.
+override_dh_compress:
+	dh_compress -XAGENTS.md

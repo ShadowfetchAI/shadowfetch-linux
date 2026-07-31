@@ -1,0 +1,4 @@
+# Shadowfetch 1.7.0 - agent-ready prerequisites.
+# Node.js/npm/git/curl/ripgrep/ffmpeg/python3-venv are already provided by other
+# lists; this adds the last missing piece so Hermes' pipx fallback works offline.
+pipx

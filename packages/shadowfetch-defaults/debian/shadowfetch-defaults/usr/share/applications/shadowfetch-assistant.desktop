@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Shadowfetch Assistant
+GenericName=Local AI Assistant
+Comment=Private, on-device AI setup and chat — no account, no cloud
+Exec=shadowfetch-assistant
+Icon=shadowfetch
+Terminal=false
+Categories=Utility;X-Shadowfetch;
+Keywords=AI;assistant;ollama;local;chat;agent;

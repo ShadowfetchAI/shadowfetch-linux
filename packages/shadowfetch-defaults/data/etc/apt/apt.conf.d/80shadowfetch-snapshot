@@ -1,0 +1,2 @@
+// Shadowfetch 2.0.0 "Bedrock": pre-apt Btrfs snapshot for one-reboot rollback.
+DPkg::Pre-Invoke { "/usr/lib/shadowfetch/apt-snapshot.sh || true"; };

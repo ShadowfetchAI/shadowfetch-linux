@@ -1,0 +1,79 @@
+#!/bin/bash
+# Agent-specific health and privacy audit. Safe fixes are opt-in.
+set -uo pipefail
+
+# ---- --help / --version, BEFORE any side effect -----------------------------
+# This block is deliberately the first thing that runs. Until 2026-07-26 this
+# tool had no argument handling at all, so `--help` fell through to the body and
+# ran the tool's normal actions. Someone asking a command what it does
+# should never thereby cause it to do the thing.
+case "${1:-}" in
+  -h|--help)
+    cat <<'SFHELP'
+shadowfetch-agent-doctor - Agent health and privacy audit. Fixes are opt-in.
+
+USAGE
+  shadowfetch-agent-doctor        report only
+  shadowfetch-agent-doctor --fix  apply the safe fixes it found
+
+WHAT IT DOES
+  Without --fix it changes nothing.
+
+Part of Shadowfetch Linux. https://shadowfetch.com/linux/
+SFHELP
+    exit 0 ;;
+  --version)
+    echo "shadowfetch-agent-doctor (Shadowfetch Linux) $(cat /usr/share/shadowfetch/version 2>/dev/null || echo unknown)"; exit 0 ;;
+esac
+
+FIX=0
+[[ "${1:-}" == "--fix-permissions" ]] && FIX=1
+warnings=0
+
+ok() { printf '  \033[1;32mOK\033[0m  %s\n' "$*"; }
+warn() { printf '  \033[1;31m!!\033[0m  %s\n' "$*"; warnings=$((warnings+1)); }
+info() { printf '  --  %s\n' "$*"; }
+
+printf 'Shadowfetch Agent Health & Security\n%s\n' '===================================' 
+
+for tool in hermes openclaw ollama podman git rg python3 node; do
+    if command -v "$tool" >/dev/null 2>&1; then
+        version=$($tool --version 2>/dev/null | head -n1 || true)
+        ok "$tool ${version:+- $version}"
+    else
+        info "$tool is not installed (optional until selected)."
+    fi
+done
+
+if command -v ollama >/dev/null 2>&1 && ss -ltnH 2>/dev/null | awk '{print $4}' | grep -E '(^|[^:])0\.0\.0\.0:11434$|\[::\]:11434$' >/dev/null; then
+    warn "Ollama is listening beyond localhost. Review OLLAMA_HOST and firewall rules."
+else
+    ok "Ollama is closed or loopback-only."
+fi
+
+if ss -ltnH 2>/dev/null | awk '{print $4}' | grep -E '(^|[^:])0\.0\.0\.0:(9119|18789)$|\[::\]:(9119|18789)$' >/dev/null; then
+    warn "An agent dashboard or gateway is listening on every network interface."
+else
+    ok "Known dashboard and gateway ports are closed or loopback-only."
+fi
+
+while IFS= read -r -d '' file; do
+    mode=$(stat -c '%a' "$file" 2>/dev/null || echo 600)
+    if (( 10#$mode % 100 != 0 )); then
+        if (( FIX )); then
+            chmod 600 "$file" && ok "Restricted $file to owner-only access."
+        else
+            warn "$file is readable by another local user."
+        fi
+    fi
+done < <(find "$HOME/.hermes" "$HOME/.openclaw" -maxdepth 4 -type f \( -name '.env' -o -name 'config.yaml' -o -name 'openclaw.json' \) -print0 2>/dev/null)
+
+if command -v hermes >/dev/null 2>&1; then
+    hermes doctor >/dev/null 2>&1 && ok "Hermes doctor passed." || warn "Hermes doctor reported a problem; run 'hermes doctor' for details."
+fi
+if command -v openclaw >/dev/null 2>&1; then
+    openclaw doctor >/dev/null 2>&1 && ok "OpenClaw doctor passed." || warn "OpenClaw doctor reported a problem; run 'openclaw doctor' for details."
+fi
+
+printf '\n%d warning(s).\n' "$warnings"
+(( warnings == 0 ))

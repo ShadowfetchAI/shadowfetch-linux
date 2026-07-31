@@ -1,0 +1,39 @@
+#!/bin/sh
+# Shadowfetch Linux — live-build configuration
+# This is the main config script live-build runs to set up the build.
+
+set -e
+
+lb config noauto \
+    --mode debian \
+    --initsystem systemd \
+    --distribution testing \
+    `# 2.1.2: chroot and bootstrap pinned to a snapshot so a rebuild reproduces` \
+    `# the same package set. "testing" moves daily -- rebuilding 2.1.1 today does` \
+    `# not give 2.1.1, and forky has already dropped network-manager-gnome, which` \
+    `# this list declares, so an unpinned build now simply aborts.` \
+    --mirror-chroot "https://snapshot.debian.org/archive/debian/20260726T000000Z/" \
+    --mirror-chroot-security "https://snapshot.debian.org/archive/debian/20260726T000000Z/" \
+    --archive-areas "main contrib non-free non-free-firmware" \
+    --debian-installer false \
+    --debian-installer-gui false \
+    --architectures amd64 \
+    --linux-flavours amd64 \
+    --binary-images iso \
+    --compression xz \
+    --iso-application "Shadowfetch Linux" \
+    --iso-publisher "Shadowfetch Project" \
+    --iso-volume "SHADOWFETCH" \
+    --bootappend-live "boot=live components username=shadow hostname=shadowfetch quiet splash" \
+    --bootloader grub2 \
+    --memtest none \
+    --win32-loader false \
+    --apt-recommends true \
+    --apt-source-archives false \
+    --backports false \
+    --security false \
+    --mirror-bootstrap "http://deb.debian.org/debian/" \
+    --mirror-binary "http://deb.debian.org/debian/" \
+    --firmware-chroot true \
+    --firmware-binary true \
+    "${@}"

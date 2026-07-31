@@ -1,0 +1,22 @@
+shadowfetch-menus (2.1.2-1) unstable; urgency=medium
+
+  * Initial release, for Shadowfetch Linux 2.1.2 "Fire Edition".
+  * Seven-category launcher as an XDG merge-dir drop-in
+    (/etc/xdg/menus/applications-merged/shadowfetch-launcher.menu):
+    Create, Develop, Communicate, Play, Protect, System, AI and Agents.
+    The stock top-level menus are deleted in the merge; the Lost & Found
+    (OnlyUnallocated) catch-all is preserved, and the QEMU gate for the
+    release is that it stays empty over the full ISO app set.
+  * The merge-dir route is deliberate: startplasma sets XDG_MENU_PREFIX
+    unconditionally and kservice hardcodes applications-merged/, so an
+    own-prefix menu file can never be reached. kmenuedit user edits
+    always win over this drop-in (stock DefaultMergeDirs merges before
+    the kmenuedit MergeFile), and plasma-workspace's conffile is never
+    touched.
+  * Seven matching .directory files in /usr/share/desktop-directories.
+  * The /usr/local/share/applications duplicate-cleanup overrides ride
+    the ISO's live-build includes.chroot, not this package: Debian
+    policy keeps /usr/local out of debs, and the admin namespace is what
+    makes the overrides survive package upgrades.
+
+ -- Shadowfetch Project <signing@shadowfetch.com>  Thu, 30 Jul 2026 10:47:33 -0400

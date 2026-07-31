@@ -1,0 +1,14 @@
+Package: shadowfetch-ai-workspace
+Version: 2.1.2-1
+Architecture: all
+Maintainer: Shadowfetch Project <signing@shadowfetch.com>
+Installed-Size: 17
+Depends: llama.cpp-tools, python3
+Section: utils
+Priority: optional
+Description: private local-AI agent workspaces for Shadowfetch Linux
+ One command creates a private agent workspace: a folder with models, jobs and
+ notes, plus a per-workspace llama-server systemd user unit that binds
+ 127.0.0.1 only and announces itself to Firewatch. Models are downloaded
+ exclusively through the Welcome catalog's checksummed, user-initiated
+ downloader - never bundled, never automatic, nothing phones home.

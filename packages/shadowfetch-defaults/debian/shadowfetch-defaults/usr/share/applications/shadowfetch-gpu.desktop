@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Install GPU Drivers
+GenericName=Graphics driver setup
+Comment=Detect your graphics card and install the recommended drivers (NVIDIA / AMD / Intel)
+Exec=konsole -e bash -c "shadowfetch-gpu; echo; read -p \"Press Enter to close…\""
+Icon=preferences-desktop-display
+Terminal=false
+Categories=System;Settings;HardwareSettings;
+Keywords=GPU;NVIDIA;AMD;Intel;driver;graphics;

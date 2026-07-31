@@ -1,0 +1,31 @@
+#!/bin/sh
+# Write/remove the per-workspace announce file Firewatch discovers.
+# Usage: shadowfetch-llama-announce start|stop <workspace>
+# Runs inside the user unit, so $XDG_RUNTIME_DIR and the EnvironmentFile
+# variables (PORT, MODEL_PATH) are present at "start".
+set -u
+ACTION="${1:?start|stop}"
+WS="${2:?workspace name}"
+DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/shadowfetch"
+FILE="$DIR/llama-$WS.json"
+
+case "$ACTION" in
+start)
+    mkdir -p "$DIR"
+    chmod 700 "$DIR"
+    # Minimal, factual, owner-readable. Firewatch validates owner uid and the
+    # port range before it ever connects (127.0.0.1 only).
+    printf '{"workspace":"%s","port":%s,"model":"%s","started":%s}\n' \
+        "$WS" "${PORT:-0}" "$(basename "${MODEL_PATH:-unknown}")" "$(date +%s)" \
+        > "$FILE.tmp"
+    chmod 600 "$FILE.tmp"
+    mv "$FILE.tmp" "$FILE"
+    ;;
+stop)
+    rm -f "$FILE" "$FILE.tmp"
+    ;;
+*)
+    echo "usage: shadowfetch-llama-announce start|stop <workspace>" >&2
+    exit 2
+    ;;
+esac

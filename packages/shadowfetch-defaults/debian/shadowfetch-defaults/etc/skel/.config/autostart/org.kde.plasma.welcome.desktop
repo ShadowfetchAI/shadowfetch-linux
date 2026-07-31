@@ -1,0 +1,6 @@
+[Desktop Entry]
+Hidden=true
+Type=Application
+Name=KDE Welcome Center (suppressed by Shadowfetch)
+Comment=Shadowfetch ships its own first-boot wizard; KDE's stock welcome
+ is hidden via this autostart override so the two don't fight on first login.

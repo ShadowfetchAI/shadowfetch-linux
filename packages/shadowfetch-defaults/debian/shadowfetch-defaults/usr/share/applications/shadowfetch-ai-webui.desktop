@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Private AI - Web Chat
+GenericName=Local AI Chat (Open-WebUI)
+Comment=Open your private, local AI chat in the browser
+Exec=shadowfetch-ai webui
+Icon=shadowfetch
+Terminal=false
+Type=Application
+Categories=Utility;Network;
+Keywords=AI;LLM;chat;Ollama;OpenWebUI;private;

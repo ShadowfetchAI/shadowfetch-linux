@@ -1,0 +1,17 @@
+./data/usr/libexec/fireproofd
+./data/usr/libexec/fireproof-postboot
+./data/usr/libexec/fireproof-session-check
+./data/usr/bin/fireproof
+./data/usr/bin/shadowfetch-fireproof
+./data/usr/lib/systemd/system/fireproofd.service
+./data/usr/lib/systemd/system/fireproof-postboot.service
+./data/usr/lib/systemd/system/fireproof-postboot.timer
+./data/usr/share/dbus-1/system-services/org.shadowfetch.Fireproof1.service
+./data/usr/share/dbus-1/system.d/org.shadowfetch.Fireproof1.conf
+./data/usr/share/polkit-1/actions/org.shadowfetch.fireproof.policy
+./data/usr/share/shadowfetch/fireproof/issue-recovery.template
+./data/usr/share/applications/shadowfetch-fireproof.desktop
+./data/etc/apt/apt.conf.d/85fireproof
+./data/etc/apt/listchanges.conf.d/shadowfetch-fireproof.conf
+./data/etc/xdg/autostart/shadowfetch-fireproof-check.desktop
+./data/usr/share/shadowfetch/control-center/sfcc/fireproof_page.py

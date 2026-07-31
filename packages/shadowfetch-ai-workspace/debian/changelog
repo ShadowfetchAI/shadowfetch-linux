@@ -1,0 +1,9 @@
+shadowfetch-ai-workspace (2.1.2-1) umbra; urgency=medium
+
+  * Initial release for Shadowfetch Linux 2.1.2 "Fire Edition".
+  * shadowfetch-workspace-create: one command to a private agent workspace.
+  * shadowfetch-llama@.service (user): per-workspace llama-server, localhost
+    only, --metrics for Firewatch tokens/sec, MemoryHigh guard.
+  * shadowfetch-llama-announce: runtime announce files consumed by Firewatch.
+
+ -- Shadowfetch Project <signing@shadowfetch.com>  Thu, 30 Jul 2026 17:00:00 -0400

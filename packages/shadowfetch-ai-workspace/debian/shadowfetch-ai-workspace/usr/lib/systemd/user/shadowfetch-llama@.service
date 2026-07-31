@@ -1,0 +1,28 @@
+[Unit]
+Description=Shadowfetch local model server for workspace "%i"
+Documentation=man:llama-server(1)
+# The workspace directory carries the config; no config, no server.
+ConditionPathExists=%h/Workspaces/%i/workspace.conf
+
+[Service]
+Type=exec
+# workspace.conf provides MODEL_PATH, PORT, CTX (written by shadowfetch-workspace-create).
+EnvironmentFile=%h/Workspaces/%i/workspace.conf
+# Announce to Firewatch (owner-uid-validated runtime file), remove on stop.
+ExecStartPre=/usr/libexec/shadowfetch-llama-announce start %i
+ExecStopPost=/usr/libexec/shadowfetch-llama-announce stop %i
+# Localhost only, always — the hard rule. --metrics feeds Firewatch tokens/sec.
+ExecStart=/usr/bin/llama-server \
+    --host 127.0.0.1 \
+    --port ${PORT} \
+    --model ${MODEL_PATH} \
+    --ctx-size ${CTX} \
+    --metrics
+Restart=on-failure
+RestartSec=5
+# A runaway model server must never eat the desktop.
+MemoryHigh=80%
+Nice=5
+
+[Install]
+WantedBy=default.target

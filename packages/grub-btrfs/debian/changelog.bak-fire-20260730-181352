@@ -1,0 +1,6 @@
+grub-btrfs (4.14-1shadowfetch1) unstable; urgency=medium
+
+  * Vendored upstream v4.14 for Shadowfetch Linux 2.0.0 "Bedrock" (boot-to-snapshot).
+  * grub-btrfs is not currently in Debian testing; shipped from the Shadowfetch repo.
+
+ -- Shadowfetch Project <signing@shadowfetch.com>  Tue, 21 Jul 2026 16:48:14 -0400

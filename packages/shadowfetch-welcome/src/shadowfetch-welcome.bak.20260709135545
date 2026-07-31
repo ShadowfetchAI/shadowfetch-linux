@@ -1,0 +1,775 @@
+#!/usr/bin/env python3
+"""
+shadowfetch-welcome - first-boot welcome & setup for Shadowfetch Linux (Umbra).
+
+A small, focused PyQt6 wizard that:
+  - Welcomes the user to Shadowfetch Linux
+  - Lets them pick a signature accent colour (applied to KDE Plasma 6)
+  - Offers a curated set of optional apps to install from Flathub
+  - Offers to set up the private, local AI stack (Ollama + Open-WebUI)
+
+Honest, fast, private, AI-ready - built on Debian + KDE Plasma 6.
+Everything here is reliable on Plasma 6; nothing is left half-working.
+"""
+
+import sys
+import shutil
+import subprocess
+from pathlib import Path
+
+from PyQt6.QtCore import Qt, QSize, pyqtSignal, QThread
+from PyQt6.QtGui import QFont, QIcon
+from PyQt6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QLabel, QPushButton, QStackedWidget, QCheckBox, QComboBox, QProgressBar,
+    QFrame, QScrollArea, QRadioButton, QButtonGroup,
+)
+
+# ---- Umbra palette -------------------------------------------------------
+GOLD       = "#D8A24A"   # Umbra Gold - primary accent
+GOLD_HOVER = "#E8B65E"
+GOLD_PRESS = "#C28E38"
+BG         = "#0B0E12"   # deep graphite
+CARD       = "#141922"
+CARD_HOVER = "#1B212C"
+BORDER     = "#2C333B"
+TEXT       = "#E6E9ED"
+MUTED      = "#9AA3AD"
+INK        = "#0B0E12"   # dark text on gold
+
+CONFIG_DIR = Path.home() / ".config" / "shadowfetch"
+CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+WELCOME_DONE_FLAG = CONFIG_DIR / "welcome-completed"
+
+FLATHUB_URL = "https://dl.flathub.org/repo/flathub.flatpakrepo"
+
+
+def _rgb(hex_colour: str) -> str:
+    """'#D8A24A' -> '216,162,74' for Plasma's kdeglobals AccentColor."""
+    h = hex_colour.lstrip("#")
+    return f"{int(h[0:2], 16)},{int(h[2:4], 16)},{int(h[4:6], 16)}"
+
+
+# name -> hex
+ACCENTS = [
+    ("Umbra Gold",    "#D8A24A"),
+    ("Eclipse Amber", "#E8B65E"),
+    ("Signal Cyan",   "#29B6F6"),
+    ("Crimson",       "#E2533B"),
+    ("Verdant",       "#7FB069"),
+    ("Violet",        "#9B7EDE"),
+]
+
+# (flatpak id, name, description) - installed from Flathub on request
+APPS = [
+    ("", "Web & productivity", ""),
+    ("com.brave.Browser",      "Brave Browser", "Private, fast Chromium browser with built-in ad-blocking"),
+    ("org.libreoffice.LibreOffice", "LibreOffice",  "Full office suite for documents, spreadsheets and slides"),
+    ("org.onlyoffice.desktopeditors", "OnlyOffice", "Office suite with strong MS Office compatibility"),
+    ("org.mozilla.Thunderbird", "Thunderbird",   "Email, calendar and contacts"),
+    ("md.obsidian.Obsidian",    "Obsidian",      "Markdown knowledge base and notes"),
+    ("net.cozic.joplin_desktop", "Joplin",       "Markdown notes with end-to-end-encrypted sync"),
+    ("com.bitwarden.desktop",  "Bitwarden",     "Open-source password manager"),
+    ("org.cryptomator.Cryptomator", "Cryptomator", "Encrypt your files before they sync to any cloud"),
+
+    ("", "Gaming", ""),
+    ("com.valvesoftware.Steam", "Steam",         "The Steam store + Proton - thousands of games, now on Linux"),
+    ("com.heroicgameslauncher.hgl", "Heroic",    "Play your Epic Games, GOG and Amazon library"),
+    ("net.lutris.Lutris",      "Lutris",         "Launch non-Steam and Windows games, emulators and more"),
+    ("net.davidotek.pupgui2",  "ProtonUp-Qt",    "One-click GE-Proton installs for better game compatibility"),
+
+    ("", "Communication", ""),
+    ("org.signal.Signal",      "Signal",        "End-to-end encrypted private messenger"),
+    ("com.discordapp.Discord", "Discord",       "Voice, video and text chat"),
+    ("org.telegram.desktop",   "Telegram",      "Fast, cloud-based messaging"),
+    ("im.riot.Riot",           "Element",        "Secure Matrix chat and collaboration"),
+    ("us.zoom.Zoom",           "Zoom",          "Video meetings and webinars"),
+
+    ("", "Media & creative", ""),
+    ("org.videolan.VLC",       "VLC",           "Plays virtually any audio or video file"),
+    ("com.spotify.Client",     "Spotify",       "Music and podcast streaming"),
+    ("com.obsproject.Studio",  "OBS Studio",    "Live streaming and screen recording"),
+    ("org.blender.Blender",     "Blender",       "3D modeling, animation and rendering"),
+    ("com.github.iwalton3.jellyfin-media-player", "Jellyfin", "Client for your self-hosted Jellyfin media server"),
+    ("tv.plex.PlexDesktop",    "Plex",          "Stream your Plex media library"),
+    ("org.darktable.Darktable","Darktable",     "RAW photo workflow and non-destructive editing"),
+    ("com.rawtherapee.RawTherapee","RawTherapee","Advanced RAW photo processing"),
+    ("org.strawberrymusicplayer.strawberry","Strawberry","Power-user music library and player"),
+    ("org.musicbrainz.Picard","MusicBrainz Picard","Automatic music tagging and organisation"),
+    ("fr.handbrake.ghb",       "HandBrake",      "Video transcoder and media ripper"),
+    ("net.scribus.Scribus",    "Scribus",       "Professional desktop publishing and page layout"),
+    ("org.kde.digikam",        "digiKam",       "Photo library, RAW import and tagging"),
+    ("com.dec05eba.gpu_screen_recorder", "GPU Screen Recorder", "Low-overhead NVENC/VAAPI screen + instant-replay capture"),
+    ("io.github.seadve.Kooha", "Kooha",         "Simple Wayland screen and GIF recorder"),
+    ("org.synfig.SynfigStudio","Synfig Studio", "2D vector animation studio"),
+    ("org.lsp_plug.in.LSP",    "LSP Plugins",   "Pro audio plugin bundle - EQ, dynamics, limiters"),
+
+    ("", "Developer", ""),
+    ("com.vscodium.codium",    "VSCodium",      "Open-source build of VS Code, telemetry-free"),
+    ("io.dbeaver.DBeaverCommunity", "DBeaver",  "Universal database tool for SQL and NoSQL"),
+    ("dev.zed.Zed",            "Zed",           "Fast, collaborative Rust-native code editor"),
+    ("com.mitchellh.ghostty",  "Ghostty",       "GPU-accelerated terminal emulator"),
+    ("io.beekeeperstudio.Studio", "Beekeeper Studio", "Modern, lightweight SQL database client"),
+    ("com.usebruno.Bruno",     "Bruno",         "Git-friendly, offline API client (Postman alternative)"),
+
+    ("", "Maker & hardware", ""),
+    ("io.github.softfever.OrcaSlicer", "OrcaSlicer", "3D-printing slicer with built-in calibration"),
+    ("com.prusa3d.PrusaSlicer","PrusaSlicer",   "Industry-standard 3D-printing slicer"),
+    ("org.freecad.FreeCAD",    "FreeCAD",        "Parametric 3D CAD modeller"),
+    ("org.kicad.KiCad",        "KiCad",          "Schematic capture and PCB design suite"),
+    ("cc.arduino.IDE2",        "Arduino IDE",    "Program and flash Arduino microcontrollers"),
+]
+
+
+# ---- helpers -------------------------------------------------------------
+def _font(size: int, bold: bool = False) -> QFont:
+    f = QFont()
+    f.setPointSize(size)
+    f.setBold(bold)
+    return f
+
+
+def _label(text: str, size: int, colour: str, bold: bool = False, wrap: bool = False) -> QLabel:
+    lab = QLabel(text)
+    lab.setFont(_font(size, bold))
+    lab.setStyleSheet(f"color: {colour}; background: transparent;")
+    lab.setWordWrap(wrap)
+    lab.setTextFormat(Qt.TextFormat.PlainText)  # never render markup literally
+    return lab
+
+
+class CommandWorker(QThread):
+    """Run a list of argv commands off the UI thread."""
+    progress = pyqtSignal(str)
+    finished = pyqtSignal(int)
+
+    def __init__(self, commands):
+        super().__init__()
+        self.commands = commands
+
+    def run(self):
+        rc = 0
+        for cmd in self.commands:
+            self.progress.emit(cmd[0] + " ...")
+            try:
+                r = subprocess.run(cmd, capture_output=True, text=True)
+                if r.returncode != 0:
+                    rc = r.returncode
+                    msg = (r.stderr or r.stdout).strip().splitlines()
+                    self.progress.emit("  ! " + (msg[-1][:160] if msg else "failed"))
+            except FileNotFoundError:
+                rc = 1
+                self.progress.emit(f"  ! {cmd[0]} not found")
+            except Exception as e:  # noqa: BLE001 - best effort, keep going
+                rc = 1
+                self.progress.emit(f"  ! {e}")
+        self.finished.emit(rc)
+
+
+class Card(QFrame):
+    """A graphite container card."""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setObjectName("card")
+        self.setStyleSheet(
+            f"QFrame#card {{ background-color: {CARD}; border: 1px solid {BORDER};"
+            f" border-radius: 12px; }}"
+        )
+
+
+# ---- pages ---------------------------------------------------------------
+class WelcomePage(QWidget):
+    def __init__(self, on_next):
+        super().__init__()
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(56, 56, 56, 48)
+        lay.setSpacing(18)
+
+        logo = QLabel()
+        icon = QIcon.fromTheme("shadowfetch")
+        if not icon.isNull():
+            logo.setPixmap(icon.pixmap(QSize(72, 72)))
+
+        title = _label("Welcome to Shadowfetch Linux", 30, TEXT, bold=True)
+        tag = _label("Umbra", 15, GOLD, bold=True)
+        body = _label(
+            "A fast, private, AI-ready desktop - honestly built on Debian and "
+            "KDE Plasma 6.\nOn the default Btrfs install every update is snapshotted, "
+            "so you can roll back a bad change with the built-in Btrfs Assistant.\n"
+            "Let's set up a couple of things and you're ready to go.",
+            13, MUTED, wrap=True,
+        )
+
+        nxt = QPushButton("Get started  →")
+        nxt.setFixedHeight(46)
+        nxt.clicked.connect(on_next)
+
+        lay.addStretch(1)
+        if logo.pixmap() is not None and not logo.pixmap().isNull():
+            lay.addWidget(logo)
+        lay.addWidget(title)
+        lay.addWidget(tag)
+        lay.addSpacing(6)
+        lay.addWidget(body)
+        lay.addStretch(2)
+        lay.addWidget(nxt, alignment=Qt.AlignmentFlag.AlignRight)
+
+
+class WiFiPage(QWidget):
+    """Step 2: get the user online so apps/drivers/updates can install."""
+    def __init__(self, on_next):
+        super().__init__()
+        self._on_next = on_next
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(48, 44, 48, 36)
+        lay.setSpacing(14)
+        lay.addWidget(_label("Connect to the internet", 22, TEXT, bold=True))
+        lay.addWidget(_label(
+            "A connection lets you install apps, drivers and updates now. Wired connections "
+            "work automatically - for Wi-Fi, open the settings below. You can also continue "
+            "and connect later.", 12, MUTED, wrap=True))
+        lay.addSpacing(6)
+        card = Card()
+        cl = QVBoxLayout(card)
+        cl.setContentsMargins(20, 18, 20, 18)
+        cl.setSpacing(12)
+        self.status = _label("Checking connection...", 13, MUTED)
+        cl.addWidget(self.status)
+        brow = QHBoxLayout()
+        wifi_btn = QPushButton("Open Wi-Fi settings")
+        wifi_btn.setFixedHeight(40)
+        wifi_btn.clicked.connect(self._open_wifi)
+        recheck = QPushButton("Re-check")
+        recheck.setFixedHeight(40)
+        recheck.clicked.connect(self._check)
+        brow.addWidget(wifi_btn)
+        brow.addWidget(recheck)
+        brow.addStretch(1)
+        cl.addLayout(brow)
+        lay.addWidget(card)
+        lay.addStretch(1)
+        nxt = QPushButton("Continue  →")
+        nxt.setFixedHeight(44)
+        nxt.clicked.connect(self._on_next)
+        lay.addWidget(nxt, alignment=Qt.AlignmentFlag.AlignRight)
+        self._check()
+
+    def _check(self):
+        online = False
+        try:
+            r = subprocess.run(["nmcli", "-t", "-f", "CONNECTIVITY", "general", "status"],
+                               capture_output=True, text=True, timeout=5)
+            online = "full" in (r.stdout or "").lower()
+        except Exception:  # noqa: BLE001
+            online = False
+        if online:
+            self.status.setText("Connected - you're online.")
+            self.status.setStyleSheet(f"color: {GOLD}; background: transparent;")
+        else:
+            self.status.setText("Not connected yet. Open Wi-Fi settings to join a network, "
+                                "or continue and connect later.")
+            self.status.setStyleSheet(f"color: {MUTED}; background: transparent;")
+
+    def _open_wifi(self):
+        for cmd in (["kcmshell6", "kcm_networkmanagement"],
+                    ["nm-connection-editor"],
+                    ["plasmawindowed", "org.kde.plasma.networkmanagement"]):
+            if shutil.which(cmd[0]):
+                try:
+                    subprocess.Popen(cmd)
+                    return
+                except Exception:  # noqa: BLE001
+                    continue
+
+
+class GraphicsPage(QWidget):
+    """Step 3: detect the GPU; offer one-click NVIDIA driver setup."""
+    def __init__(self, on_next):
+        super().__init__()
+        self._on_next = on_next
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(48, 44, 48, 36)
+        lay.setSpacing(14)
+        lay.addWidget(_label("Graphics drivers", 22, TEXT, bold=True))
+        gpu = self._detect()
+        card = Card()
+        cl = QVBoxLayout(card)
+        cl.setContentsMargins(20, 18, 20, 18)
+        cl.setSpacing(10)
+        if gpu == "nvidia":
+            cl.addWidget(_label("NVIDIA graphics detected", 14, GOLD, bold=True))
+            cl.addWidget(_label(
+                "Install the recommended NVIDIA driver for full performance, smooth video and "
+                "external displays. We detect your exact card and pick the right driver - it opens "
+                "in a terminal and asks before changing anything.", 12, MUTED, wrap=True))
+            btn = QPushButton("Install GPU drivers")
+            btn.setFixedHeight(42)
+            btn.clicked.connect(self._launch_gpu)
+            cl.addWidget(btn, alignment=Qt.AlignmentFlag.AlignLeft)
+        else:
+            label = {"amd": "AMD", "intel": "Intel"}.get(gpu, "Your")
+            cl.addWidget(_label(f"{label} graphics - open-source drivers active", 14, GOLD, bold=True))
+            cl.addWidget(_label(
+                "The built-in open-source drivers already give you full acceleration, Vulkan and "
+                "hardware video decoding. Nothing to install.", 12, MUTED, wrap=True))
+        lay.addWidget(card)
+        lay.addStretch(1)
+        nxt = QPushButton("Continue  →")
+        nxt.setFixedHeight(44)
+        nxt.clicked.connect(self._on_next)
+        lay.addWidget(nxt, alignment=Qt.AlignmentFlag.AlignRight)
+
+    def _detect(self):
+        try:
+            out = subprocess.run(["lspci"], capture_output=True, text=True, timeout=5).stdout
+        except Exception:  # noqa: BLE001
+            return "unknown"
+        low = "\n".join(l for l in out.splitlines()
+                        if any(k in l for k in ("VGA", "3D", "Display"))).lower()
+        if "nvidia" in low:
+            return "nvidia"
+        if any(k in low for k in ("amd", "ati", "radeon")):
+            return "amd"
+        if "intel" in low:
+            return "intel"
+        return "unknown"
+
+    def _launch_gpu(self):
+        term = shutil.which("konsole") or shutil.which("x-terminal-emulator")
+        if term:
+            try:
+                subprocess.Popen([term, "-e", "bash", "-lc",
+                                  "shadowfetch-gpu; echo; read -p 'Press Enter to close...'"])
+            except Exception:  # noqa: BLE001
+                pass
+
+
+class AccentSwatch(QWidget):
+    """A colour chip with the name underneath - label never clips."""
+    clicked = pyqtSignal(str, str)
+
+    def __init__(self, name, hexc):
+        super().__init__()
+        self.name = name
+        self.hexc = hexc
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        v = QVBoxLayout(self)
+        v.setContentsMargins(0, 0, 0, 0)
+        v.setSpacing(8)
+        self.chip = QFrame()
+        self.chip.setFixedSize(96, 56)
+        self.lab = _label(name, 11, MUTED)
+        self.lab.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        v.addWidget(self.chip, alignment=Qt.AlignmentFlag.AlignHCenter)
+        v.addWidget(self.lab)
+        self.set_selected(False)
+
+    def set_selected(self, sel):
+        border = f"3px solid {TEXT}" if sel else f"1px solid {BORDER}"
+        self.chip.setStyleSheet(
+            f"background-color: {self.hexc}; border: {border}; border-radius: 10px;"
+        )
+        weight = "700" if sel else "400"
+        self.lab.setStyleSheet(
+            f"color: {GOLD if sel else MUTED}; background: transparent; font-weight: {weight};"
+        )
+
+    def mousePressEvent(self, ev):
+        self.clicked.emit(self.name, self.hexc)
+
+
+class AccentPage(QWidget):
+    def __init__(self, on_next):
+        super().__init__()
+        self.selected_name = ACCENTS[0][0]
+        self.selected_hex = ACCENTS[0][1]
+        self.swatches = []
+
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(48, 48, 48, 40)
+        lay.setSpacing(14)
+
+        lay.addWidget(_label("Choose your accent colour", 22, TEXT, bold=True))
+        lay.addWidget(_label(
+            "Used for highlights, active windows and controls across the desktop. "
+            "You can change it any time in System Settings.",
+            12, MUTED, wrap=True,
+        ))
+        lay.addSpacing(12)
+
+        grid = QHBoxLayout()
+        grid.setSpacing(14)
+        grid.addStretch(1)
+        for name, hexc in ACCENTS:
+            sw = AccentSwatch(name, hexc)
+            sw.clicked.connect(self._select)
+            self.swatches.append(sw)
+            grid.addWidget(sw)
+        grid.addStretch(1)
+        lay.addLayout(grid)
+
+        # --- Wallpaper picker (applies live, lock screen too) ---
+        import glob as _glob
+        lay.addSpacing(18)
+        lay.addWidget(_label("Choose your wallpaper", 16, TEXT, bold=True))
+        self._wp_btns = []
+        wrow = QHBoxLayout()
+        wrow.setSpacing(10)
+        wrow.addStretch(1)
+        for wp in sorted(_glob.glob("/usr/share/wallpapers/Umbra*/contents/images/3840x2160.jpg")):
+            vid = wp.split("/")[4]
+            btn = QPushButton()
+            btn.setCheckable(True)
+            btn.setFixedSize(172, 101)
+            btn.setToolTip(vid.replace("Umbra", "Umbra "))
+            try:
+                from PyQt6.QtGui import QPixmap as _QPM, QIcon as _QI
+                from PyQt6.QtCore import QSize as _QS
+                pm = _QPM(wp).scaled(166, 93,
+                        Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                        Qt.TransformationMode.SmoothTransformation)
+                btn.setIcon(_QI(pm))
+                btn.setIconSize(_QS(166, 93))
+            except Exception:
+                btn.setText(vid)
+            btn.setStyleSheet(
+                "QPushButton{border:2px solid #2a313b;border-radius:8px;background:#11151b;}"
+                "QPushButton:checked{border:2px solid %s;}" % GOLD)
+            if vid == "UmbraGold":
+                btn.setChecked(True)
+            btn.clicked.connect(lambda _c, p=wp, b=btn: self._pick_wallpaper(p, b))
+            self._wp_btns.append(btn)
+            wrow.addWidget(btn)
+        wrow.addStretch(1)
+        lay.addLayout(wrow)
+
+        lay.addSpacing(10)
+        lay.addWidget(_label("Applies after your next login.", 11, MUTED))
+        lay.addStretch(1)
+
+        nxt = QPushButton("Continue  →")
+        nxt.setFixedHeight(44)
+        nxt.clicked.connect(lambda: on_next(self.selected_name, self.selected_hex))
+        lay.addWidget(nxt, alignment=Qt.AlignmentFlag.AlignRight)
+
+        self._select(self.selected_name, self.selected_hex)
+
+    def _select(self, name, hexc):
+        self.selected_name, self.selected_hex = name, hexc
+        for sw in self.swatches:
+            sw.set_selected(sw.name == name)
+
+    def _pick_wallpaper(self, path, btn):
+        for b in self._wp_btns:
+            b.setChecked(b is btn)
+        try:
+            subprocess.Popen(["plasma-apply-wallpaperimage", path])
+            subprocess.Popen(["kwriteconfig6", "--file", "kscreenlockerrc",
+                              "--group", "Greeter", "--group", "Wallpaper",
+                              "--group", "org.kde.image", "--group", "General",
+                              "--key", "Image", path])
+        except Exception:
+            pass
+
+
+class AppsPage(QWidget):
+    def __init__(self, on_next):
+        super().__init__()
+        self.checks = []
+
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(48, 40, 48, 32)
+        lay.setSpacing(12)
+
+        lay.addWidget(_label("Add apps and local AI", 22, TEXT, bold=True))
+        lay.addWidget(_label(
+            "Optional - tick anything you want and we'll set it up. "
+            "Everything installs from Flathub; skip and add later any time.",
+            12, MUTED, wrap=True,
+        ))
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        container = QWidget()
+        vbox = QVBoxLayout(container)
+        vbox.setContentsMargins(0, 4, 6, 4)
+        vbox.setSpacing(10)
+
+        # Flagship: local AI stack
+        ai_card = Card()
+        ai_row = QHBoxLayout(ai_card)
+        ai_row.setContentsMargins(16, 14, 16, 14)
+        self.ai_cb = QCheckBox()
+        ai_text = QVBoxLayout()
+        ai_text.setSpacing(2)
+        ai_name = _label("Set up Local AI  -  Ollama + Gemma 3 + Llama 3.2", 13, GOLD, bold=True)
+        ai_desc = _label(
+            "Private, 100% on-device chat. Opens a quick terminal setup that installs "
+            "Ollama, pulls Gemma 3 + Llama 3.2, and offers the Open-WebUI web chat. "
+            "Several GB download; nothing ever leaves your machine.",
+            11, MUTED, wrap=True,
+        )
+        ai_text.addWidget(ai_name)
+        ai_text.addWidget(ai_desc)
+        ai_row.addWidget(self.ai_cb, 0, Qt.AlignmentFlag.AlignTop)
+        ai_row.addLayout(ai_text, 1)
+        vbox.addWidget(ai_card)
+
+        # Pick-your-own model from Hugging Face (hardware-matched)
+        llm_card = Card()
+        llm_row = QHBoxLayout(llm_card)
+        llm_row.setContentsMargins(16, 14, 16, 14)
+        self.llm_cb = QCheckBox()
+        llm_text = QVBoxLayout()
+        llm_text.setSpacing(2)
+        llm_text.addWidget(_label("Pick a model from Hugging Face  -  matched to your hardware", 13, GOLD, bold=True))
+        llm_text.addWidget(_label(
+            "Opens a terminal that checks your RAM/GPU and lets you choose a local model "
+            "(or paste any Hugging Face GGUF repo). Runs 100% on-device via Ollama.",
+            11, MUTED, wrap=True,
+        ))
+        llm_row.addWidget(self.llm_cb, 0, Qt.AlignmentFlag.AlignTop)
+        llm_row.addLayout(llm_text, 1)
+        vbox.addWidget(llm_card)
+
+        # Curated apps
+        for app_id, name, desc in APPS:
+            if not app_id:  # section header row
+                vbox.addSpacing(8)
+                vbox.addWidget(_label(name, 13, GOLD, bold=True))
+                continue
+            card = Card()
+            row = QHBoxLayout(card)
+            row.setContentsMargins(16, 12, 16, 12)
+            cb = QCheckBox()
+            txt = QVBoxLayout()
+            txt.setSpacing(2)
+            txt.addWidget(_label(name, 13, TEXT, bold=True))
+            txt.addWidget(_label(desc, 11, MUTED, wrap=True))
+            row.addWidget(cb, 0, Qt.AlignmentFlag.AlignTop)
+            row.addLayout(txt, 1)
+            self.checks.append((cb, app_id))
+            vbox.addWidget(card)
+
+        vbox.addStretch(1)
+        scroll.setWidget(container)
+        lay.addWidget(scroll, 1)
+
+        nxt = QPushButton("Continue  →")
+        nxt.setFixedHeight(44)
+        nxt.clicked.connect(self._submit)
+        lay.addWidget(nxt, alignment=Qt.AlignmentFlag.AlignRight)
+        self._on_next = on_next
+
+    def _submit(self):
+        flatpaks = [app for cb, app in self.checks if cb.isChecked()]
+        self._on_next(flatpaks, self.ai_cb.isChecked(), self.llm_cb.isChecked())
+
+
+class AgentPage(QWidget):
+    """Step 6: choose an optional local AI agent (folds in the old agent-picker)."""
+    def __init__(self, on_next):
+        super().__init__()
+        self._on_next = on_next
+        self.agent = "none"
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(48, 40, 48, 32)
+        lay.setSpacing(12)
+        lay.addWidget(_label("Choose your AI agent", 22, TEXT, bold=True))
+        lay.addWidget(_label(
+            "Shadowfetch is agent-ready. Install an autonomous AI agent now, or skip and add "
+            "one later. Whatever you pick runs on your own machine - cloud is optional.", 12, MUTED, wrap=True))
+        lay.addSpacing(6)
+        self.group = QButtonGroup(self)
+        opts = [
+            ("none", "Not now", "Skip for now - set one up anytime with 'AI Agents - Get Started' in the menu."),
+            ("hermes", "Hermes", "Nous Research's self-improving agent - writes its own skills as you work. On-device; cloud optional."),
+            ("openclaw", "OpenClaw", "Lightweight personal agent. Friendly setup; drives your local Ollama models out of the box."),
+        ]
+        for key, name, desc in opts:
+            card = Card()
+            row = QHBoxLayout(card)
+            row.setContentsMargins(16, 12, 16, 12)
+            rb = QRadioButton()
+            rb.setChecked(key == "none")
+            rb.toggled.connect(lambda checked, k=key: self._set(k) if checked else None)
+            self.group.addButton(rb)
+            txt = QVBoxLayout()
+            txt.setSpacing(2)
+            txt.addWidget(_label(name, 13, GOLD if key != "none" else TEXT, bold=True))
+            txt.addWidget(_label(desc, 11, MUTED, wrap=True))
+            row.addWidget(rb, 0, Qt.AlignmentFlag.AlignTop)
+            row.addLayout(txt, 1)
+            lay.addWidget(card)
+        lay.addStretch(1)
+        nxt = QPushButton("Continue  →")
+        nxt.setFixedHeight(44)
+        nxt.clicked.connect(lambda: self._on_next(self.agent))
+        lay.addWidget(nxt, alignment=Qt.AlignmentFlag.AlignRight)
+
+    def _set(self, key):
+        self.agent = key
+
+
+class InstallPage(QWidget):
+    def __init__(self, on_close):
+        super().__init__()
+        self.on_close = on_close
+        self.setup_ai = False
+        self.setup_llm = False
+        self.agent = "none"
+
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(48, 48, 48, 40)
+        lay.setSpacing(16)
+
+        self.title = _label("Setting things up…", 22, TEXT, bold=True)
+        self.bar = QProgressBar()
+        self.bar.setRange(0, 0)
+        self.log = _label("", 11, MUTED, wrap=True)
+
+        lay.addWidget(self.title)
+        lay.addWidget(self.bar)
+        lay.addWidget(self.log)
+        lay.addStretch(1)
+
+        self.done_btn = QPushButton("Finish")
+        self.done_btn.setFixedHeight(44)
+        self.done_btn.setEnabled(False)
+        self.done_btn.clicked.connect(self._finish)
+        lay.addWidget(self.done_btn, alignment=Qt.AlignmentFlag.AlignRight)
+
+    def start(self, accent_name, accent_hex, flatpak_ids, setup_ai, setup_llm, agent):
+        self.setup_ai = setup_ai
+        self.setup_llm = setup_llm
+        self.agent = agent
+        (CONFIG_DIR / "accent").write_text(f"{accent_name}\n{accent_hex}\n")
+
+        commands = [
+            ["kwriteconfig6", "--file", "kdeglobals", "--group", "General",
+             "--key", "AccentColor", _rgb(accent_hex)],
+        ]
+        if flatpak_ids:
+            commands.append(["flatpak", "remote-add", "--user", "--if-not-exists",
+                             "flathub", FLATHUB_URL])
+            for fid in flatpak_ids:
+                commands.append(["flatpak", "install", "-y", "--user", "flathub", fid])
+
+        self.worker = CommandWorker(commands)
+        self.worker.progress.connect(self.log.setText)
+        self.worker.finished.connect(self._on_done)
+        self.worker.start()
+
+    def _on_done(self, rc):
+        self.title.setText("All set." if rc == 0 else "Done (with minor warnings).")
+        self.bar.setRange(0, 1)
+        self.bar.setValue(1)
+        if self.setup_ai or self.setup_llm or self.agent != "none":
+            self.log.setText("Click Finish to open the selected setup(s) in the terminal.")
+        self.done_btn.setEnabled(True)
+
+    def _finish(self):
+        WELCOME_DONE_FLAG.touch()
+        term = shutil.which("konsole") or shutil.which("x-terminal-emulator")
+        if term:
+            cmds = []
+            if self.setup_ai:
+                cmds.append("shadowfetch-ai setup")
+            if self.setup_llm:
+                cmds.append("shadowfetch-llm")
+            if self.agent == "hermes":
+                cmds.append("shadowfetch-hermes")
+            elif self.agent == "openclaw":
+                cmds.append("shadowfetch-openclaw")
+            if cmds:
+                self._launch(term, "; ".join(cmds))
+        self.on_close()
+
+    def _launch(self, term, cmd):
+        try:
+            subprocess.Popen([term, "-e", "bash", "-c",
+                              f"{cmd}; echo; read -p 'Press Enter to close...'"])
+        except Exception:  # noqa: BLE001
+            pass
+
+
+class ShadowfetchWelcome(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Shadowfetch Linux - Welcome")
+        self.setMinimumSize(QSize(820, 600))
+        self.setStyleSheet(f"""
+            QMainWindow {{ background-color: {BG}; }}
+            QWidget {{ color: {TEXT}; }}
+            QLabel {{ background: transparent; }}
+            QCheckBox {{ spacing: 10px; }}
+            QCheckBox::indicator {{ width: 18px; height: 18px; }}
+            QPushButton {{
+                background-color: {GOLD}; color: {INK};
+                font-weight: 700; padding: 11px 26px;
+                border: none; border-radius: 8px;
+            }}
+            QPushButton:hover {{ background-color: {GOLD_HOVER}; }}
+            QPushButton:pressed {{ background-color: {GOLD_PRESS}; }}
+            QPushButton:disabled {{ background-color: #333a44; color: #6b727b; }}
+            QProgressBar {{
+                border: 1px solid {BORDER}; border-radius: 5px;
+                background: #11161e; height: 10px; text-align: center; color: {MUTED};
+            }}
+            QProgressBar::chunk {{ background-color: {GOLD}; border-radius: 5px; }}
+            QScrollArea {{ background: transparent; border: none; }}
+            QScrollBar:vertical {{ background: transparent; width: 10px; margin: 2px; }}
+            QScrollBar::handle:vertical {{ background: {BORDER}; border-radius: 5px; min-height: 24px; }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
+        """)
+
+        self.accent_name = ACCENTS[0][0]
+        self.accent_hex = ACCENTS[0][1]
+        self.flatpaks = []
+        self.setup_ai = False
+        self.setup_llm = False
+
+        self.stack = QStackedWidget()
+        self.setCentralWidget(self.stack)
+
+        # Streamlined flow: Welcome -> Wi-Fi -> Graphics -> Accent -> Apps -> AI agent -> Install
+        self.welcome = WelcomePage(lambda: self.stack.setCurrentIndex(1))
+        self.wifi = WiFiPage(lambda: self.stack.setCurrentIndex(2))
+        self.graphics = GraphicsPage(lambda: self.stack.setCurrentIndex(3))
+        self.accent = AccentPage(self._got_accent)
+        self.apps = AppsPage(self._got_apps)
+        self.agent = AgentPage(self._got_agent)
+        self.install = InstallPage(self.close)
+
+        for w in (self.welcome, self.wifi, self.graphics, self.accent,
+                  self.apps, self.agent, self.install):
+            self.stack.addWidget(w)
+
+    def _got_accent(self, name, hexc):
+        self.accent_name, self.accent_hex = name, hexc
+        self.stack.setCurrentIndex(4)
+
+    def _got_apps(self, flatpaks, setup_ai, setup_llm):
+        self.flatpaks = flatpaks
+        self.setup_ai = setup_ai
+        self.setup_llm = setup_llm
+        self.stack.setCurrentIndex(5)
+
+    def _got_agent(self, agent):
+        self.stack.setCurrentIndex(6)
+        self.install.start(self.accent_name, self.accent_hex, self.flatpaks,
+                           self.setup_ai, self.setup_llm, agent)
+
+
+def main():
+    if WELCOME_DONE_FLAG.exists() and "--force" not in sys.argv:
+        return 0
+    app = QApplication(sys.argv)
+    app.setApplicationName("Shadowfetch Welcome")
+    win = ShadowfetchWelcome()
+    win.show()
+    return app.exec()
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,10 @@
+7e7d72346418b28dd16a173742d00acf  usr/lib/systemd/system/shadowfetch-ember.service
+230213e222fdcd582f43758c1c175b73  usr/libexec/ember-duration
+7c7412b897c1f4234d42843c1c393d1d  usr/libexec/ember-restore
+4759f6ef53fc9d3881cebfac0f0452a4  usr/libexec/emberd
+66629731ab7a38e6e4ca141df282b03b  usr/share/dbus-1/system.d/com.shadowfetch.Ember1.conf
+da21d67da01a08a19ec2da8de43f6035  usr/share/doc/shadowfetch-ember/changelog.Debian.gz
+050f8b5556a0f1a148397e9015be8dd5  usr/share/doc/shadowfetch-ember/copyright
+2823b07441733df6580fa8f33bb01c2d  usr/share/polkit-1/actions/com.shadowfetch.ember.policy
+7fcfa2aa5c3e428d5dc1dab71fb31edb  usr/share/polkit-1/rules.d/50-shadowfetch-ember.rules
+c8105590472759f3457abdf61c355386  usr/share/shadowfetch/ember/pause-list.conf

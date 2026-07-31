@@ -1,0 +1,86 @@
+#!/bin/sh
+# Shadowfetch: remove the live-session account from the installed system.
+# Runs in the target chroot via the Calamares "shellprocess" module.
+#
+# WHY THIS IS A SCRIPT AND NOT AN INLINE ONE-LINER.
+# It used to be a single shellprocess.conf command:
+#
+#   userdel --remove --force shadow 2>/dev/null; rm -rf /home/shadow 2>/dev/null; \
+#   rm -f /etc/sddm.conf.d/10-shadowfetch-autologin.conf 2>/dev/null; \
+#   rm -f /etc/sudoers.d/shadowfetch-live-shadow 2>/dev/null; true
+#
+# Every command suppressed its own errors and the whole thing ended in `true`, so
+# the step could not report failure. The live account is `shadow` with password
+# `shadow` and NOPASSWD:ALL sudo (see 0005-create-live-user.hook.chroot) -- an
+# ordinary live-medium convention, and a root-equivalent credential if it survives
+# an install. A silent failure therefore shipped a known-password sudo account and
+# reported the install as successful.
+#
+# MEASURED 2026-07-24 on a real 2.0.0 erase-disk install: the removal DOES work on
+# the default path -- all five artefacts were absent afterwards. But three
+# conditions make userdel return 1 while leaving the account AND its password hash
+# intact: a process still owned by shadow, a busy home directory, and an immutable
+# file under /home/shadow. None are reachable via the default path, so the exposure
+# was conditional rather than absolute.
+#
+# This closes it at both ends: clear those three obstacles first, then VERIFY and
+# fail loudly if anything survived. Aborting the install is a deliberate trade --
+# a visible failure the user can report beats a silent credential they cannot see.
+#
+# `set -u` but deliberately NOT `set -e`: a failed userdel must fall through to the
+# explicit cleanup below, and the verification block is what decides the outcome.
+set -u
+
+USER=shadow
+SUDOERS=/etc/sudoers.d/shadowfetch-live-shadow
+AUTOLOGIN=/etc/sddm.conf.d/10-shadowfetch-autologin.conf
+
+echo "[shadowfetch] Removing live-session user '$USER' from the installed system..."
+
+# 1. Clear the three known obstacles. Each is best-effort -- absence is the normal
+#    case, so nothing here is fatal on its own. The verification decides.
+pkill -KILL -u "$USER" 2>/dev/null || true
+if [ -d "/home/$USER" ]; then
+    chattr -R -i "/home/$USER" 2>/dev/null || true
+fi
+sync
+
+# 2. Remove, and report the exit status instead of hiding it.
+if getent passwd "$USER" >/dev/null 2>&1; then
+    userdel --remove --force "$USER"
+    rc=$?
+    if [ "$rc" -eq 0 ]; then
+        echo "[shadowfetch]   userdel succeeded"
+    else
+        echo "[shadowfetch]   userdel exited $rc -- falling through to explicit cleanup" >&2
+    fi
+else
+    echo "[shadowfetch]   no '$USER' account present (already absent)"
+fi
+
+rm -rf "/home/$USER"
+rm -f "$SUDOERS" "$AUTOLOGIN"
+
+# 3. VERIFY. This is the entire point: the old one-liner could not tell the
+#    difference between "removed" and "failed to remove". Check every artefact,
+#    including the /etc/shadow hash, which userdel leaves behind on failure.
+failed=""
+if getent passwd "$USER" >/dev/null 2>&1;   then failed="$failed passwd-entry"; fi
+if grep -q "^${USER}:" /etc/shadow 2>/dev/null; then failed="$failed shadow-hash"; fi
+if [ -e "/home/$USER" ];                    then failed="$failed home-dir"; fi
+if [ -e "$SUDOERS" ];                       then failed="$failed nopasswd-sudoers"; fi
+if [ -e "$AUTOLOGIN" ];                     then failed="$failed sddm-autologin"; fi
+
+if [ -n "$failed" ]; then
+    echo "[shadowfetch] FATAL: the live '$USER' account was not fully removed." >&2
+    echo "[shadowfetch]        surviving:$failed" >&2
+    echo "[shadowfetch]        Refusing to finish. This account has a published" >&2
+    echo "[shadowfetch]        password and passwordless sudo, so completing the" >&2
+    echo "[shadowfetch]        install would hand over a machine with a known" >&2
+    echo "[shadowfetch]        credential. Please report this, with this message, at" >&2
+    echo "[shadowfetch]        https://github.com/ShadowfetchAI/shadowfetch-linux/issues" >&2
+    exit 1
+fi
+
+echo "[shadowfetch] Live user '$USER' fully removed (account, hash, home, sudoers, autologin)."
+exit 0

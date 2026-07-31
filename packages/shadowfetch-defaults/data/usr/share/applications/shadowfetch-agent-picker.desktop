@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Choose AI Agent
+GenericName=AI Agent Installer
+Comment=Install the Hermes or OpenClaw AI agent - or none
+Exec=shadowfetch-agent-picker
+Icon=shadowfetch
+Terminal=false
+Categories=System;Utility;
+Keywords=AI;Agent;Hermes;OpenClaw;
+NoDisplay=true

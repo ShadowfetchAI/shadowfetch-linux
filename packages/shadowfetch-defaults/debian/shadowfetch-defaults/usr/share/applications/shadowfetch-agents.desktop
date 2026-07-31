@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=AI Agents — Get Started
+GenericName=AI Agent Setup
+Comment=Set up Hermes or OpenClaw — run an autonomous AI agent on your machine
+Exec=konsole -e bash -lc "shadowfetch-agents; exec bash"
+Icon=shadowfetch
+Terminal=false
+Categories=System;Utility;
+Keywords=AI;Agent;Hermes;OpenClaw;LLM;Ollama;local;

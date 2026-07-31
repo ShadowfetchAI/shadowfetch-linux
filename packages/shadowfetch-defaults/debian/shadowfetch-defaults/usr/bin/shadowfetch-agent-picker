@@ -1,0 +1,118 @@
+#!/usr/bin/env python3
+
+# ---- --help / --version, BEFORE any other import ----------------------------
+# Deliberately above the Qt import: this is a GUI tool, and importing PyQt6
+# first would make `--help` die with an import error on a headless machine
+# instead of printing anything. Until 2026-07-26 there was no argument handling
+# here at all.
+import os as _sfsos
+import sys as _sfsys
+if any(_a in ("-h", "--help") for _a in _sfsys.argv[1:]):
+    print("""shadowfetch-agent-picker - Graphical 'choose your AI agent' screen.
+
+USAGE
+  shadowfetch-agent-picker         show the picker
+  shadowfetch-agent-picker --once  show only if never chosen (used at first login)
+
+WHAT IT DOES
+  Records the choice. Installing happens in the tool you pick.
+
+Part of Shadowfetch Linux. https://shadowfetch.com/linux/""")
+    raise SystemExit(0)
+if "--version" in _sfsys.argv[1:]:
+    print("shadowfetch-agent-picker (Shadowfetch Linux) " + (open("/usr/share/shadowfetch/version").read().strip() if _sfsos.path.exists("/usr/share/shadowfetch/version") else "unknown"))
+    raise SystemExit(0)
+# shadowfetch-agent-picker - explicit "choose your AI agent" screen (Shadowfetch 1.2.9)
+# Hermes / OpenClaw / none. Autostarts once on first login (--once); also a menu entry.
+import sys, shutil, subprocess, pathlib
+from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
+                             QLabel, QPushButton, QFrame)
+from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import Qt
+
+GOLD="#D8A24A"; TEXT="#E8E6E3"; MUTED="#9A968F"; BG="#1A1A1D"; CARD="#232327"; BORDER="#3A3A3F"
+STAMP = pathlib.Path.home()/".local"/"share"/"shadowfetch"/"agent-picker.done"
+
+def mark_done():
+    try:
+        STAMP.parent.mkdir(parents=True, exist_ok=True)
+        STAMP.write_text("done\n")
+    except Exception:
+        pass
+
+def find_term():
+    for t in ("konsole","x-terminal-emulator","gnome-terminal","xterm"):
+        if shutil.which(t):
+            return t
+    return None
+
+def run_agent(binname):
+    inner = binname + "; echo; read -p \"Press Enter to close...\" _"
+    term = find_term()
+    if not term:
+        subprocess.Popen([binname]); return
+    if term == "konsole":
+        subprocess.Popen([term, "-e", "bash", "-lc", inner])
+    elif term == "gnome-terminal":
+        subprocess.Popen([term, "--", "bash", "-lc", inner])
+    else:
+        subprocess.Popen([term, "-e", "bash -lc " + repr(inner)])
+
+class Card(QFrame):
+    def __init__(self, title, subtitle, on_click):
+        super().__init__()
+        self._cb = on_click
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setStyleSheet("QFrame{background:%s;border:1px solid %s;border-radius:12px;} QFrame:hover{border:2px solid %s;}" % (CARD, BORDER, GOLD))
+        lay = QVBoxLayout(self); lay.setContentsMargins(20,16,20,16); lay.setSpacing(5)
+        t = QLabel(title); t.setStyleSheet("color:%s;font-size:18px;font-weight:700;background:transparent;border:none;" % GOLD)
+        s = QLabel(subtitle); s.setWordWrap(True); s.setStyleSheet("color:%s;font-size:12px;background:transparent;border:none;" % MUTED)
+        lay.addWidget(t); lay.addWidget(s)
+    def mousePressEvent(self, e):
+        self._cb()
+
+class Picker(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Choose your AI Agent")
+        self.setStyleSheet("background:%s;" % BG)
+        self.setMinimumWidth(580)
+        lay = QVBoxLayout(self); lay.setContentsMargins(40,34,40,30); lay.setSpacing(14)
+        title = QLabel("Choose your AI Agent")
+        title.setStyleSheet("color:%s;font-size:26px;font-weight:700;background:transparent;" % TEXT)
+        body = QLabel("Shadowfetch can set up a local AI agent that runs tasks and uses your on-device models. "
+                      "Pick one to install now — or skip and set one up later from the menu.")
+        body.setWordWrap(True); body.setStyleSheet("color:%s;font-size:13px;background:transparent;" % MUTED)
+        lay.addWidget(title); lay.addWidget(body); lay.addSpacing(6)
+        lay.addWidget(Card("Hermes Agent",
+                           "Autonomous agent from Nous Research. Observes your workflow and drafts actions, "
+                           "running against your local models.",
+                           lambda: self.choose("shadowfetch-hermes")))
+        lay.addWidget(Card("OpenClaw",
+                           "Open-source agent CLI — “the lobster way.” Installed via npm; works with your local Ollama models.",
+                           lambda: self.choose("shadowfetch-openclaw")))
+        row = QHBoxLayout(); row.addStretch(1)
+        skip = QPushButton("Not now  —  none")
+        skip.setCursor(Qt.CursorShape.PointingHandCursor)
+        skip.setStyleSheet("QPushButton{color:%s;background:transparent;border:1px solid %s;border-radius:8px;padding:10px 18px;} QPushButton:hover{border:1px solid %s;color:%s;}" % (TEXT, BORDER, GOLD, GOLD))
+        skip.clicked.connect(self.skip)
+        row.addWidget(skip)
+        lay.addSpacing(6); lay.addLayout(row)
+    def choose(self, binname):
+        mark_done(); run_agent(binname); self.close()
+    def skip(self):
+        mark_done(); self.close()
+
+def main():
+    once = "--once" in sys.argv
+    if once and STAMP.exists():
+        return 0
+    app = QApplication(sys.argv)
+    icon = QIcon.fromTheme("shadowfetch")
+    if not icon.isNull():
+        app.setWindowIcon(icon)
+    w = Picker(); w.show()
+    return app.exec()
+
+if __name__ == "__main__":
+    sys.exit(main())
